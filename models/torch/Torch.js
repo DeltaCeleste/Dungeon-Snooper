@@ -8,12 +8,50 @@ export class Torch extends THREE.Object3D {
             metalness: 0.75,
             roughness: 0.32
         });
+
         var bodyGeometry = this.createBodyGeometry();
-        console.log(bodyGeometry.attributes);
-        // TODO: crear llama
         var bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
         bodyMesh.translateY(0.15);
         this.add(bodyMesh);
+
+        this.loadFireTextures();
+        this.fireFrameCounter = 0;
+        this.fireMaterial = new THREE.MeshStandardMaterial({
+            transparent: true,
+            map: this.fireTextures[this.fireFrameCounter],
+            //emissive: THREE.Color.NAMES.yellow,
+        })
+        this.addFire();
+        var fireLight = new THREE.PointLight(THREE.Color.NAMES.orangered, 0.25, 1.0);
+        fireLight.position.set(0.0, 0.3, 0.0);
+        this.add(fireLight);
+
+        this.frameTimer = 0;
+    }
+
+    addFire() {
+        const SIZE = 0.2;
+        const originalGeometry = new THREE.PlaneGeometry(SIZE, SIZE);
+        for(let i = 0; i < 4; i++) {
+            const rotatedGeometry = originalGeometry.clone().rotateY(Math.PI * i * 0.5);
+            var fireMesh = new THREE.Mesh(rotatedGeometry, this.fireMaterial);
+            fireMesh.translateY(0.35);
+            this.add(fireMesh);
+        }
+    }
+
+    loadFireTextures() {
+        var loader = new THREE.TextureLoader();
+
+        /** @type {Array<THREE.Texture>} */
+        this.fireTextures = [];
+
+        for(let i = 1; i <= 13; i++) {
+            let currFrameName = "/imgs/fire/fire1_" + i.toString().padStart(2, '0') + ".png";
+            //let frame_i_name = "/imgs/wood.jpg";
+            let currFrame = loader.load(currFrameName, (_) => {}, (_) => {}, (err) => {console.error(err);});
+            this.fireTextures.push(currFrame);
+        }
     }
 
     createBodyGeometry() {
@@ -71,7 +109,20 @@ export class Torch extends THREE.Object3D {
         return shape;
     }
 
-    update() {
+    updateFireMaterial() {
+        this.fireFrameCounter++;
+        this.fireFrameCounter %= this.fireTextures.length;
+        this.fireMaterial.map = this.fireTextures[this.fireFrameCounter];
+        this.fireMaterial.needsUpdate = true;
+    }
 
+    update() {
+        const FIRE_UPDATE_SPEED = 5;
+
+        this.frameTimer++;
+        if(this.frameTimer === FIRE_UPDATE_SPEED) {
+            this.updateFireMaterial();
+            this.frameTimer = 0;
+        }
     }
 }

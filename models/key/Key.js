@@ -1,5 +1,5 @@
-
 import * as THREE from 'three'
+import * as CSG from 'csg'
 
 class Key extends THREE.Object3D {
   constructor(gui,titleGui) {
@@ -12,12 +12,21 @@ class Key extends THREE.Object3D {
     // El material se usa desde varios métodos. Por eso se alamacena en un atributo
     //this.material = new THREE.MeshStandardMaterial({color: 0x885500});
     this.material = new THREE.MeshStandardMaterial({
-      color: 0x886d32,
+      color: 0xaa8d52,
       emissive: 0x463f28,
       roughness: 0.5,
       metalness: 1,
       emissiveIntensity: 0.4,
     });
+    this.material_textura = new THREE.MeshStandardMaterial({
+      color: 0xaa8d52,
+      emissive: 0x463f28,
+      roughness: 0.5,
+      metalness: 1,
+      emissiveIntensity: 0.4,
+      normalMap: new THREE.TextureLoader().load('../../imgs/metal.jpeg')
+    });
+    
     
     // A la base no se accede desde ningún método. Se almacena en una variable local del constructor
     var radio = 0.5;   
@@ -74,9 +83,6 @@ class Key extends THREE.Object3D {
 
     ]
     var path = new THREE.CatmullRomCurve3(pts, true);
-    //var pts = path.getPoints(500)
-    //const geo = new THREE.BufferGeometry().setFromPoints(pts);
-    //var handle = new THREE.Line(geo, this.material)
     var handle_options = {depth: 1, steps: 1500, bevelEnabled: false, extrudePath: path};
     var handle = new THREE.Mesh(new THREE.ExtrudeGeometry (handle_shape, handle_options), this.material);
     handle.scale.z = 0.1;
@@ -85,11 +91,15 @@ class Key extends THREE.Object3D {
 
     // El cuerpo principal
     radio = radio*0.1/2
-    var neck = new THREE.Mesh(new THREE.CylinderGeometry(radio, radio, altura, 40, 1, false), this.material);
+    var neck = new THREE.CylinderGeometry(radio, radio, altura, 40, 1, false);
     // Una punta redondeada para el cuerpo
-    var point = new THREE.Mesh(new THREE.SphereGeometry(radio), this.material);
-    point.position.y = altura/2;
-    neck.add(point);
+    var point = new THREE.SphereGeometry(radio);
+    point.translate(0,altura/2,0);
+
+    var neckbrush = new CSG.Brush (neck , this.material);
+    var pointbrush = new CSG.Brush (point , this.material);
+    var evaluador = new CSG.Evaluator () ;
+    var body = evaluador.evaluate (neckbrush, pointbrush, CSG.ADDITION);
 
     //Dientes
     var teethe_shape = this.teeth_deline();
@@ -101,15 +111,15 @@ class Key extends THREE.Object3D {
 
     //Lo posicionamos para unirlo en el extremo del cuerpo
     teeth.position.y = altura/5;
-    neck.add(teeth);
+    body.add(teeth);
 
     // Lo apoyamos y desplazamos para unirla satisfactoriamente con el aro
-    neck.rotation.x = Math.PI/2;
-    neck.position.z = altura/2+radio/2+radio;
+    body.rotation.x = Math.PI/2;
+    body.position.z = altura/2+radio/2+radio;
     //neck.position.y = radio/2+radio;
 
     base.add(handle);
-    base.add(neck);
+    base.add(body);
     return base;
   }
 

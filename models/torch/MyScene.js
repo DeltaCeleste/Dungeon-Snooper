@@ -172,7 +172,7 @@ class MyScene extends THREE.Scene {
     var renderer = new THREE.WebGLRenderer();
 
     // Se establece un color de fondo en las imágenes que genera el render
-    renderer.setClearColor(new THREE.Color(0xEEEEEE), 1.0);
+    renderer.setClearColor(new THREE.Color(0x223355), 1.0);
 
     // Se establece el tamaño, se aprovecha la totalidad de la ventana del navegador
     renderer.setSize(window.innerWidth, window.innerHeight);

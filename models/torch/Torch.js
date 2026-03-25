@@ -19,7 +19,8 @@ export class Torch extends THREE.Object3D {
         this.fireMaterial = new THREE.MeshStandardMaterial({
             transparent: true,
             map: this.fireTextures[this.fireFrameCounter],
-            //emissive: THREE.Color.NAMES.yellow,
+            emissive: THREE.Color.NAMES.white,
+            emissiveIntensity: 0.33,
         })
         this.addFire();
         var fireLight = new THREE.PointLight(THREE.Color.NAMES.orangered, 0.25, 1.0);
@@ -115,12 +116,12 @@ export class Torch extends THREE.Object3D {
         this.fireMaterial.map = this.fireTextures[this.fireFrameCounter];
         this.fireMaterial.needsUpdate = true;
     }
+    
+    static get fireUpdateSpeed() { return 5; }
 
     update() {
-        const FIRE_UPDATE_SPEED = 5;
-
         this.frameTimer++;
-        if(this.frameTimer === FIRE_UPDATE_SPEED) {
+        if(this.frameTimer === Torch.fireUpdateSpeed) {
             this.updateFireMaterial();
             this.frameTimer = 0;
         }

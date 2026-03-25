@@ -20,8 +20,8 @@ class Key extends THREE.Object3D {
     });
     
     // A la base no se accede desde ningún método. Se almacena en una variable local del constructor
-    var radio = 0.010;   
-    var altura = 0.035;
+    var radio = 0.5;   
+    var altura = 1;
     var base = this.createBody(radio, altura);
     
     // Al nodo  this, la grapadora, se le cuelgan como hijos la base y la parte móvil
@@ -48,31 +48,46 @@ class Key extends THREE.Object3D {
     // El nodo base
     var base = new THREE.Object3D();
 
-    var radio_tubo = radio/5;
-
     // El aro de la llave
     /*var handle = new THREE.Mesh(new THREE.TorusKnotGeometry(radio, radio_tubo, 300, 20, 2, 11), this.material); //su radio total es radio+radio/2+radio_tubo, de ancho radio/2+radio_tubo 
     // vamos a apoyarla sobre la mesa para mejor visualización
     handle.rotation.x = Math.PI/2;
     handle.position.y = radio/2+radio_tubo;*/
-    var handle_shape = this.handle_deline();
+    var handle_shape = this.handle_deline(radio);
+
     var pts = [
-      new THREE.Vector3(10,0,0),
-      new THREE.Vector3(0,0,10),
-      new THREE.Vector3(-10,0,0),
-      new THREE.Vector3(0,0,-10),
+      new THREE.Vector3(2,0,0),
+      new THREE.Vector3(1.8,0,0.45),
+      new THREE.Vector3(1.5,0,0.5),
+      new THREE.Vector3(0.4,0,0.3),
+      new THREE.Vector3(0,0,1),
+      new THREE.Vector3(-0.4,0,0.3),
+      new THREE.Vector3(-1.5,0,0.5),
+      new THREE.Vector3(-1.8,0,0.45),
+      new THREE.Vector3(-2,0,0),
+
+      new THREE.Vector3(-1.25,0,-2),
+      new THREE.Vector3(-1.5,0,-2.5),
+      new THREE.Vector3(0,0,-1.25),
+      new THREE.Vector3(1.5,0,-2.5),
+      new THREE.Vector3(1.25,0,-2),
+
     ]
     var path = new THREE.CatmullRomCurve3(pts, true);
-    var handle_options = {depth: 10, steps: 20, bevelEnabled: false, extrudePath: path};
+    //var pts = path.getPoints(500)
+    //const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    //var handle = new THREE.Line(geo, this.material)
+    var handle_options = {depth: 1, steps: 1500, bevelEnabled: false, extrudePath: path};
     var handle = new THREE.Mesh(new THREE.ExtrudeGeometry (handle_shape, handle_options), this.material);
-    handle.scale.z = (radio_tubo/3);
-    handle.scale.y = altura/3;
-    handle.scale.x = altura/3;
+    handle.scale.z = 0.1;
+    handle.scale.y = 0.1;
+    handle.scale.x = 0.1;
 
     // El cuerpo principal
-    var neck = new THREE.Mesh(new THREE.CylinderGeometry(radio_tubo, radio_tubo, altura, 40, 1, false), this.material);
+    radio = radio*0.1/2
+    var neck = new THREE.Mesh(new THREE.CylinderGeometry(radio, radio, altura, 40, 1, false), this.material);
     // Una punta redondeada para el cuerpo
-    var point = new THREE.Mesh(new THREE.SphereGeometry(radio_tubo), this.material);
+    var point = new THREE.Mesh(new THREE.SphereGeometry(radio), this.material);
     point.position.y = altura/2;
     neck.add(point);
 
@@ -80,21 +95,21 @@ class Key extends THREE.Object3D {
     var teethe_shape = this.teeth_deline();
     var teeth_options = {depth: 1, steps: 2, bevelEnabled: false};
     var teeth = new THREE.Mesh(new THREE.ExtrudeGeometry (teethe_shape, teeth_options), this.material);
-    teeth.scale.z = (radio_tubo/3);
+    teeth.scale.z = (radio/3);
     teeth.scale.y = altura/4;
     teeth.scale.x = altura/3;
 
     //Lo posicionamos para unirlo en el extremo del cuerpo
     teeth.position.y = altura/5;
-    //neck.add(teeth);
+    neck.add(teeth);
 
     // Lo apoyamos y desplazamos para unirla satisfactoriamente con el aro
     neck.rotation.x = Math.PI/2;
-    neck.position.z = altura/2+radio/2+radio_tubo;
-    neck.position.y = radio/2+radio_tubo;
+    neck.position.z = altura/2+radio/2+radio;
+    //neck.position.y = radio/2+radio;
 
     base.add(handle);
-    //base.add(neck);
+    base.add(neck);
     return base;
   }
 
@@ -123,40 +138,40 @@ class Key extends THREE.Object3D {
     return shape;
   }
 
-  handle_deline(){
+  handle_deline(radio){
     var shape = new THREE.Shape();
-    shape.lineTo(1,0);
+    shape.lineTo(radio,0);
     shape.quadraticCurveTo(
-      1, 0.5,
-      0.5, 0.5
+      radio, radio/2,
+      radio/2, radio/2
     )
     shape.quadraticCurveTo(
-      0.5, 1,
-      0, 1
+      radio/2, radio,
+      0, radio
     )
     shape.quadraticCurveTo(
-      -0.5, 1,
-      -0.5, 0.5
+      -radio/2, radio,
+      -radio/2, radio/2
     )
     shape.quadraticCurveTo(
-      -1, 0.5,
-      -1, 0
+      -radio, radio/2,
+      -radio, 0
     )
     shape.quadraticCurveTo(
-      -1, -0.5,
-      -0.5, -0.5
+      -radio, -radio/2,
+      -radio/2, -radio/2
     )
     shape.quadraticCurveTo(
-      -0.5, -1,
-      0, -1
+      -radio/2, -radio,
+      0, -radio
     )
     shape.quadraticCurveTo(
-      0.5, -1,
-      0.5, -0.5
+      radio/2, -radio,
+      radio/2, -radio/2
     )
     shape.quadraticCurveTo(
-      1, -0.5,
-      1, 0
+      radio, -radio/2,
+      radio, 0
     )
 
     return shape

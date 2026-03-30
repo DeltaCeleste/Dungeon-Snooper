@@ -13,7 +13,7 @@
  * no tankee las prestaciones. 
  * Gracias, Brendan Eich.
  */
-function toCell(row, col) {
+export function toCell(row, col) {
     return `${row}:${col}`
 }
 
@@ -22,7 +22,7 @@ function toCell(row, col) {
  * @returns {[number, number]}
  * Hace lo mismo que la función anterior pero a la inversa. Devuelve una tupla que se puede desestructurar fácilmente.
  */
-function toCoords(cell) {
+export function toCoords(cell) {
     var numberStrings = cell.split(':');
     if(numberStrings.length !== 2) {
         throw Error('Invalid cell string format');
@@ -36,7 +36,7 @@ function toCoords(cell) {
  * @returns {boolean}
  * Comprueba si las celdas son adyacentes.
  */
-function cellAdjacent(cell1, cell2) {
+export function cellAdjacent(cell1, cell2) {
     const [row1, col1] = toCoords(cell1);
     const [row2, col2] = toCoords(cell2);
     const dRow = row2 - row1;
@@ -52,7 +52,7 @@ function cellAdjacent(cell1, cell2) {
  * @returns {Cell[]} 
  * Devuelve un array con las cuatro celdas adyacentes a la dada. Puede que sea útil para los algoritmos de generación de laberintos.
  */
-function getCellsAdjacent(cell) {
+export function getCellsAdjacent(cell) {
     const [row, col] = toCoords(cell);
     return [
         toCell(row - 1, col),
@@ -62,7 +62,7 @@ function getCellsAdjacent(cell) {
     ];
 }
 
-class Maze {
+export class Maze {
     /** 
      * @type {Map.<Cell, Array.<Cell>>} 
      * Grafo interno que asigna a cada celda las celdas adyacentes a las que puede acceder (i.e., las que no tienen muro de por medio). 
@@ -387,16 +387,17 @@ class Maze {
 }
 
 // Programa de prueba.
-// TODO: borrar esto
-var maze = new Maze(3, 3);
+function __maze_test() {
+    var maze = new Maze(3, 3);
 
-maze.connectCells(toCell(0,0), toCell(0,1));
-maze.connectCells(toCell(0,1), toCell(1,1));
-maze.connectCells(toCell(1,1), toCell(1,2));
-maze.connectCells(toCell(1,2), toCell(0,2));
-maze.connectCells(toCell(1,2), toCell(2,2));
-maze.connectCells(toCell(1,0), toCell(2,0));
-maze.connectCells(toCell(2,0), toCell(2,1));
-maze.connectCells(toCell(2,1), toCell(2,2));
-maze.printDebug();
-maze.prettyPrint();
+    maze.connectCells(toCell(0,0), toCell(0,1));
+    maze.connectCells(toCell(0,1), toCell(1,1));
+    maze.connectCells(toCell(1,1), toCell(1,2));
+    maze.connectCells(toCell(1,2), toCell(0,2));
+    maze.connectCells(toCell(1,2), toCell(2,2));
+    maze.connectCells(toCell(1,0), toCell(2,0));
+    maze.connectCells(toCell(2,0), toCell(2,1));
+    maze.connectCells(toCell(2,1), toCell(2,2));
+    maze.printDebug();
+    maze.prettyPrint();
+}

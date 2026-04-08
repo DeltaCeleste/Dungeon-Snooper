@@ -2,9 +2,24 @@ import * as THREE from 'three'
 import * as CSG from 'csg'
 
 class Eye extends THREE.Object3D {
+  addIrisAndPupil() {
+    var irisGeometry = new THREE.CylinderGeometry(0.01, 0.01, 0.01, 16);
+    irisGeometry.translate(0.0, 0.0198, 0.0);
+    var irisMaterial = new THREE.MeshStandardMaterial({
+      color: THREE.Color.NAMES.blue,
+    });
+    this.iris = new THREE.Mesh(irisGeometry, irisMaterial);
+    this.eyeball.add(this.iris);
+  }
+
+  rotateIris() {
+    this.iris.rotation.z += 1 / 50 * Math.cos(this.time);
+    this.iris.rotation.x += 1 / 150 * Math.sin(5 * this.time);
+  }
+
   constructor(gui,titleGui) {
     super();
-    
+    this.time = 0.0;
     // Se crea la parte de la interfaz que corresponde a la grapadora
     // Se crea primero porque otros métodos usan las variables que se definen para la interfaz
     this.createGUI(gui,titleGui);
@@ -17,7 +32,8 @@ class Eye extends THREE.Object3D {
     
     this.eyeball = new THREE.Mesh(eyeGeometry, eyeMaterial);
     this.add(this.eyeball);
-
+    this.addIrisAndPupil();
+    this.iris.rotateX(Math.PI / 2);
   }
   
   createGUI (gui,titleGui) {
@@ -36,7 +52,8 @@ class Eye extends THREE.Object3D {
   }
 
   update () {
-    // No hay nada que actualizar ya que la apertura de la grapadora se ha actualizado desde la interfaz
+    this.time += 1 / 60;
+    this.rotateIris();
   }
 }
 

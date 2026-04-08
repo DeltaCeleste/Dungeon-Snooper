@@ -53,3 +53,8 @@ function generateMazeDfs(rows, cols, seed, startingCell) {
 
     return maze;
 }
+
+function __maze_test() {
+    var maze = generateMazeDfs(20, 20, 'laberinto');
+    maze.prettyPrint();
+}

@@ -9,15 +9,14 @@ class Eye extends THREE.Object3D {
     // Se crea primero porque otros métodos usan las variables que se definen para la interfaz
     this.createGUI(gui,titleGui);
     
-    // El material se usa desde varios métodos. Por eso se alamacena en un atributo
-    //this.material = new THREE.MeshStandardMaterial({color: 0x885500});
-    this.material = new THREE.MeshStandardMaterial({
-      color: 0xa37911,
+    var eyeMaterial = new THREE.MeshStandardMaterial({
+      color: THREE.Color.NAMES.white,
+      roughness: 0.1,
     });
+    var eyeGeometry = new THREE.SphereGeometry(0.025, 32, 16);
     
-    // A la base no se accede desde ningún método. Se almacena en una variable local del constructor
-    
-    // Al nodo  this, la grapadora, se le cuelgan como hijos la base y la parte móvil
+    this.eyeball = new THREE.Mesh(eyeGeometry, eyeMaterial);
+    this.add(this.eyeball);
 
   }
   

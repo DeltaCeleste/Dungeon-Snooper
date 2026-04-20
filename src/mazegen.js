@@ -1,4 +1,4 @@
-import { getCellsAdjacent, Maze, toCell } from './maze.js';
+import { getCellsAdjacent, Maze, toCell, toCoords } from './maze.js';
 import * as rand from './external/seedrandom.js';
 import * as readline from 'readline';
 import { read } from 'fs';
@@ -44,7 +44,14 @@ function generateMazeDfs(rows, cols, seed, startingCell) {
             let chosenCellIdx = mod(rand.int32(), unvisitedNeighbors.length);
             let chosenCell = unvisitedNeighbors[chosenCellIdx];
 
-            maze.connectCells(currentCell, chosenCell);
+            let [row, col] = toCoords(chosenCell);
+            let canMakeWeakWall = (row >= maze.rows / 3 && col >= maze.cols / 3);
+
+            if(rand.int32() % 4 == 0 && canMakeWeakWall) {
+                maze.makeWeakWall(currentCell, chosenCell);
+            } else {
+                maze.connectCells(currentCell, chosenCell);
+            }
 
             visited.add(chosenCell);
             frontier.push(chosenCell);
@@ -55,6 +62,6 @@ function generateMazeDfs(rows, cols, seed, startingCell) {
 }
 
 function __maze_test() {
-    var maze = generateMazeDfs(20, 20, 'laberinto');
+    var maze = generateMazeDfs(20, 20, 'laberintos');
     maze.prettyPrint();
 }

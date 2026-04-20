@@ -70,6 +70,19 @@ export class Maze {
     #graph;
 
     /** 
+     * @type {Map.<Cell, Array.<Cell>>} 
+     * Almacena solo las paredes "débiles" (que pueden ser rotas con el pico).
+     */ 
+    #weakWalls;
+
+    /** @readonly @enum {number} */
+    static WallType = {
+        Full: 2,
+        Weak: 1,
+        None: 0
+    };
+
+    /** 
      * @readonly @enum {number} 
      * Enumerado que representa los muros asignados a una celda. Debido a que celdas adyacentes comparten muros,
      * solo es necesario que una celda dada tenga los muros hacia arriba y hacia la izquierda (el muro hacia abajo
@@ -101,10 +114,12 @@ export class Maze {
         /** @type {number} */ this.cols = cols;
 
         this.#graph = new Map();
+        this.#weakWalls = new Map();
 
         for(let i = 0; i < this.rows; i++) {
             for(let j = 0; j < this.cols; j++) {
                 this.#graph.set(toCell(i,j), []);
+                this.#weakWalls.set(toCell(i, j), []);
             }
         }
     }
@@ -151,6 +166,34 @@ export class Maze {
     /**
      * @param {Cell} cell1 
      * @param {Cell} cell2 
+     * Hace el muro entre las dos celdas dadas "débil" (es decir, rompible con el pico).
+     * Deben de ser adyacentes y estar ambas en rango del laberinto.
+     * Si ya están separadas por un muro débil, no hace nada.
+     */
+    makeWeakWall(cell1, cell2) {
+        if(!cellAdjacent(cell1, cell2)) {
+            throw Error("Cells not adjacent");
+        }
+
+        if(!this.contains(cell1)) {
+            throw Error(`${cell1} out of range`);
+        }
+
+        if(!this.contains(cell2)) {
+            throw Error(`${cell2} out of range`);
+        }
+
+        if(this.#graph.get(cell1).indexOf(cell2) === -1) {
+            this.#weakWalls.get(cell1).push(cell2);
+        }
+        if(this.#graph.get(cell2).indexOf(cell1) === -1) {
+            this.#weakWalls.get(cell2).push(cell1);
+        }
+    }
+
+    /**
+     * @param {Cell} cell1 
+     * @param {Cell} cell2 
      * Desconecta las dos celdas dadas (creando un muro entre ellas).
      * Deben de ser adyacentes y estar ambas en rango del laberinto.
      * Si ya están desconectadas, no hace nada.
@@ -176,46 +219,80 @@ export class Maze {
         if(cell2InCell1 !== -1) { 
             this.#graph.get(cell1).splice(cell2InCell1, 1); 
         }
+
+        // Hacemos lo mismo quitando muros débiles.
+        cell1InCell2 = this.#weakWalls.get(cell2).indexOf(cell1);
+        cell2InCell1 = this.#weakWalls.get(cell1).indexOf(cell2);
+        if(cell1InCell2 !== -1) { 
+            this.#weakWalls.get(cell2).splice(cell1InCell2, 1); 
+        }
+        if(cell2InCell1 !== -1) { 
+            this.#weakWalls.get(cell1).splice(cell2InCell1, 1); 
+        }
     }
 
     /**
      * @param {Cell} cell 
-     * @returns {boolean}
+     * @returns {WallType}
      * Comprueba si la celda dada debería tener un muro hacia arriba (es decir, si no está conectada a su celda superior)
      */
-    hasUpperWall(cell) {
+    upperWall(cell) {
         const [row, col] = toCoords(cell);
-        return this.#graph.get(cell).indexOf(toCell(row - 1, col)) === -1
+        if(this.#weakWalls.get(cell).indexOf(toCell(row - 1, col)) !== -1) {
+            return Maze.WallType.Weak;
+        } else if(this.#graph.get(cell).indexOf(toCell(row - 1, col)) === -1) {
+            return Maze.WallType.Full;
+        } else {
+            return Maze.WallType.None;
+        }
     }
 
     /**
      * @param {number} row 
      * @param {number} col 
-     * @returns {boolean}
+     * @returns {WallType}
      * Lo mismo que con (cell), pero toma fila y columna en lugar de una celda preconstruida para evitar tener que deconstruirla.
      */
-    hasUpperWall(row, col) {
-        return this.#graph.get(toCell(row, col)).indexOf(toCell(row - 1, col)) === -1
+    upperWall(row, col) {
+        if(this.#weakWalls.get(toCell(row, col)).indexOf(toCell(row - 1, col)) !== -1) {
+            return Maze.WallType.Weak;
+        } else if(this.#graph.get(toCell(row, col)).indexOf(toCell(row - 1, col)) === -1) {
+            return Maze.WallType.Full;
+        } else {
+            return Maze.WallType.None;
+        }
     }
 
     /**
      * @param {Cell} cell 
-     * @returns {boolean}
+     * @returns {WallType}
      * Comprueba si la celda dada debería tener un muro hacia la izquierda (es decir, si no está conectada a su celda izquierda)
      */
-    hasLeftWall(cell) {
+    leftWall(cell) {
         const [row, col] = toCoords(cell);
-        return this.#graph.get(cell).indexOf(toCell(row, col - 1)) === -1
+        if(this.#weakWalls.get(cell).indexOf(toCell(row, col - 1)) !== -1) {
+            return Maze.WallType.Weak;
+        } else if(this.#graph.get(cell).indexOf(toCell(row, col -1)) === -1) {
+            return Maze.WallType.Full;
+        } else {
+            return Maze.WallType.None;
+        }
     }
 
     /**
      * @param {number} row 
      * @param {number} col 
-     * @returns {boolean}
+     * @returns {WallType}
      * Lo mismo que con (cell), pero toma fila y columna en lugar de una celda preconstruida para evitar tener que deconstruirla.
      */
-    hasLeftWall(row, col) {
-        return this.#graph.get(toCell(row, col)).indexOf(toCell(row, col - 1)) === -1
+    leftWall(row, col) {
+        if(this.#weakWalls.get(toCell(row, col)).indexOf(toCell(row, col - 1)) !== -1) {
+            return Maze.WallType.Weak;
+        } else if(this.#graph.get(toCell(row, col)).indexOf(toCell(row, col - 1)) === -1) {
+            return Maze.WallType.Full;
+        } else {
+            return Maze.WallType.None;
+        }
     }
 
     /**
@@ -223,6 +300,7 @@ export class Maze {
      */
     #fillStringReprMatrix() {
         const WallState = Maze.WallState;
+        const WallType = Maze.WallType;
         
         // Notemos que el valor de la esquina solo se debe dar si la celda superior tiene un muro vertical, 
         // o si la celda izquierda tiene un muro horizontal. Esto depende de las celdas en posiciones anteriores y
@@ -242,7 +320,7 @@ export class Maze {
         // Rellenamos la primera fila (siempre tiene muros arriba)
         for(let j = 1; j < this.cols; j++) {
             this.#stringReprMatrix[0][j] = WallState.NorthWall;
-            if(this.hasLeftWall(0, j)) {
+            if(this.leftWall(0, j) !== WallType.None) {
                 this.#stringReprMatrix[0][j] |= WallState.WestWall;
             }
         }
@@ -250,7 +328,7 @@ export class Maze {
         // Rellenamos la primera columna (siempre tiene muros a la derecha)
         for(let i = 1; i < this.rows; i++) {
             this.#stringReprMatrix[i][0] = WallState.WestWall;
-            if(this.hasUpperWall(i, 0)) {
+            if(this.upperWall(i, 0) !== WallType.None) {
                 this.#stringReprMatrix[i][0] |= WallState.NorthWall;
             }
         }
@@ -258,10 +336,10 @@ export class Maze {
         // Rellenamos el resto de casillas recursivamente 
         for(let i = 1; i < this.rows; i++) {
             for(let j = 1; j < this.cols; j++) {
-                if(this.hasUpperWall(i, j)) {
+                if(this.upperWall(i, j) !== WallType.None) {
                     this.#stringReprMatrix[i][j] += WallState.NorthWall;
                 }
-                if(this.hasLeftWall(i, j)) {
+                if(this.leftWall(i, j) !== WallType.None) {
                     this.#stringReprMatrix[i][j] += WallState.WestWall;
                 }
 
@@ -296,6 +374,7 @@ export class Maze {
      */
     #getAsStrings() {
         const WallState = Maze.WallState;
+        const WallType = Maze.WallType;
         // Tamaño (n x n) que una sola celda del laberinto tendrá en el resultado. 
         // Con el valor de 5, una celda con los muros arriba y a la izquierda se verá así:
         /*
@@ -311,6 +390,8 @@ export class Maze {
         const FREE_CELL = ' '.charCodeAt(0);
         // Carácter que representa un muro entre dos celdas
         const WALL_CELL = '#'.charCodeAt(0);
+        // Carácter que representa un muro débil
+        const WALL_WEAK = 'X'.charCodeAt(0);
         
         this.#fillStringReprMatrix();
         
@@ -338,21 +419,23 @@ export class Maze {
                 }
 
                 const currentCell = this.#stringReprMatrix[i][j]
+                let isWeakUpperWall = (this.upperWall(i, j) === WallType.Weak);
+                let isWeakLeftWall = (this.leftWall(i, j) === WallType.Weak);
 
                 // Todas las celdas no vacías tienen la esquina
                 if(currentCell !== WallState.Empty) {
-                    chars[i * CELL_SIZE][j * CELL_SIZE] = WALL_CELL;
+                    chars[i * CELL_SIZE][j * CELL_SIZE] = (isWeakUpperWall || isWeakLeftWall) ? WALL_WEAK : WALL_CELL;
                 }
                 // Se encarga del muro de arriba (primera fila del bloque)
                 if(currentCell === WallState.NorthWall || currentCell === WallState.BothWalls) {
                     for(let strCol = j * CELL_SIZE; strCol < (j + 1) * CELL_SIZE; strCol++) {
-                        chars[i * CELL_SIZE][strCol] = WALL_CELL;
+                        chars[i * CELL_SIZE][strCol] = isWeakUpperWall ? WALL_WEAK : WALL_CELL;
                     }
                 }
                 // Se encarga del muro de la izquierda (primera columna del bloque)
                 if(currentCell === WallState.WestWall || currentCell === WallState.BothWalls) {
                     for(let strRow = i * CELL_SIZE; strRow < (i + 1) * CELL_SIZE; strRow++) {
-                        chars[strRow][j * CELL_SIZE] = WALL_CELL;
+                        chars[strRow][j * CELL_SIZE] = isWeakLeftWall ? WALL_WEAK : WALL_CELL;
                     }
                 }
             }

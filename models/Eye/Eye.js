@@ -2,22 +2,20 @@ import * as THREE from 'three'
 import * as CSG from 'csg'
 
 class Eye extends THREE.Object3D {
-  constructor(gui,titleGui) {
+  constructor(_gui,_titleGui) {
     super();
     
-    // Se crea la parte de la interfaz que corresponde a la grapadora
-    this.createGUI(gui,titleGui);
-
+    this.timer = new THREE.Timer();
+    this.totalTimeClamped = 0.0;
     //Animacion
     //ojo--------------------------
-    this.time = 0.0;
-    this.targetX = 0.0;
+    this.targetX = Math.PI/2;
     this.targetZ = 0.0;
+    this.targetPupilScale = 1.0;
 
     //alas-------------------------
-    this.max_rot = -Math.PI/4
-    this.min_rot = Math.PI/6
-    this.reloj = new THREE.Timer();
+    this.maxRotation = -Math.PI/4
+    this.minRotation = Math.PI/6
 
     //Construcción
     //ojos-------------------------
@@ -33,16 +31,15 @@ class Eye extends THREE.Object3D {
     this.iris.rotateX(Math.PI / 2);
     
     //alas--------------------------
-    this.right_wing = new Wing();
-    this.right_wing.scale.set(0.1,0.1,0.1)
-    this.right_wing.position.set(0.01,0.01,0)
-    this.left_wing = new Wing();
-    this.left_wing.position.set(-0.01,0.01,0)
-    this.left_wing.scale.set(-0.1,0.1,0.1)
+    this.rightWing = new Wing();
+    this.rightWing.scale.set(0.1,0.1,0.1)
+    this.rightWing.position.set(0.01,0.01,0)
+    this.leftWing = new Wing();
+    this.leftWing.position.set(-0.01,0.01,0)
+    this.leftWing.scale.set(-0.1,0.1,0.1)
     
-    this.add(this.right_wing)
-    this.add(this.left_wing)
-
+    this.add(this.rightWing)
+    this.add(this.leftWing)
   }
 
   addPupil() {
@@ -82,37 +79,51 @@ class Eye extends THREE.Object3D {
         this.iris.rotation.z = THREE.MathUtils.lerp(this.iris.rotation.z, toRotZ, factor);
     }
 
+    static MIN_PUPIL_SCALE = 1.0;
+    static MAX_PUPIL_SCALE = 4.0
     setPupilScale(scale) {
-        if(scale < 4.0 && scale > 0.5) {
+        if(Eye.MIN_PUPIL_SCALE < scale && scale < Eye.MAX_PUPIL_SCALE) {
             this.pupil.scale.x = scale;
             this.pupil.scale.z = scale;
         }
     }
     
     getPupilScale() { return this.pupil.scale.x; };
-  
-    createGUI (gui,titleGui) {
 
+    lerpPupilScale(targetScale, factor) {
+        this.pupil.scale.x = THREE.MathUtils.lerp(this.pupil.scale.x, targetScale, factor);
+        this.pupil.scale.z = THREE.MathUtils.lerp(this.pupil.scale.z, targetScale, factor);
     }
 
+    changeTarget() {
+        this.targetX = Math.PI / 2 + Math.random() * 1.4 - 0.7;
+        this.targetZ = Math.random() * 1.5 - 0.5;
+        this.targetPupilScale = Math.random() * (Eye.MAX_PUPIL_SCALE - Eye.MIN_PUPIL_SCALE) + Eye.MIN_PUPIL_SCALE;
+    }
+
+    static EYE_LOOK_FREQUENCY = 0.8;
+
     update () {
-        //Animación Ojo-------------------------------------------------
-        this.time += 1;
-        if(this.time % 70 === 0) {
-            this.targetX = Math.PI / 2 + Math.random() * 1.4 - 0.7
-            this.targetZ = Math.random() * 2.0 - 1.0
+        let totalTime = this.timer.getElapsed();
+        let deltaTime = this.timer.getDelta();
+        this.totalTimeClamped += deltaTime;
+        //Animación Ojo------------------------
+        if(this.totalTimeClamped >= Eye.EYE_LOOK_FREQUENCY) {
+            this.totalTimeClamped -= Eye.EYE_LOOK_FREQUENCY;
+            this.changeTarget();
         }
         this.lerpIrisRotation(this.targetX, this.targetZ, 0.08);
-        this.setPupilScale(this.getPupilScale() + 0.005)
+        this.lerpPupilScale(this.targetPupilScale, 0.1);
 
         //Animación alas--------------------------
-        this.reloj.update()
         //var giro = this.max_rot*(Math.sin(this.reloj.getElapsed()+3*Math.PI/2)+1);
-        var giro = (this.max_rot-this.min_rot)/2*Math.sin(8*this.reloj.getElapsed()+3*Math.PI/2)+((this.max_rot-this.min_rot)/2+this.min_rot);
-        this.left_wing.update(giro)
-        this.right_wing.update(giro)
-        //console.log((-(this.max_rot-this.min_rot)/2))
-        //console.log(giro)
+        let rotationMid = (this.maxRotation-this.minRotation) / 2
+        var giro = rotationMid * Math.sin(8 * totalTime + 3*Math.PI/2) + (rotationMid + this.minRotation);
+        
+        
+        this.timer.update()
+        this.leftWing.update(giro)
+        this.rightWing.update(giro)
     }
 }
 
@@ -128,13 +139,13 @@ class Wing extends THREE.Object3D {
      // El nodo base
     var base = new THREE.Object3D();
 
-    var foreWing_options = {depth: 0.001, steps: 2, bevelEnabled: false};
-    this.foreWing = new THREE.Mesh(new THREE.ExtrudeGeometry(this.foreWingShape(), foreWing_options), material);
+    var foreWingExtrudeOptions = {depth: 0.001, steps: 2, bevelEnabled: false};
+    this.foreWing = new THREE.Mesh(new THREE.ExtrudeGeometry(this.foreWingShape(), foreWingExtrudeOptions), material);
     this.foreWing.translateX(0.5)
     this.foreWing.rotation.y = (Math.PI/6)
 
-    var wing_options = {depth: 0.0011, steps: 2, bevelEnabled: false};
-    this.wing = new THREE.Mesh(new THREE.ExtrudeGeometry(this.wingShape(), wing_options), material);
+    var wingExtrudeOptions = {depth: 0.0011, steps: 2, bevelEnabled: false};
+    this.wing = new THREE.Mesh(new THREE.ExtrudeGeometry(this.wingShape(), wingExtrudeOptions), material);
     this.wing.rotation.y = (Math.PI/12)
     this.wing.rotation.x = (Math.PI/4)
     

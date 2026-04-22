@@ -372,7 +372,7 @@ export class Maze {
             #        #
             ##########
      */
-    #getAsStrings() {
+    getAsStrings() {
         const WallState = Maze.WallState;
         const WallType = Maze.WallType;
         // Tamaño (n x n) que una sola celda del laberinto tendrá en el resultado. 
@@ -460,7 +460,7 @@ export class Maze {
     }
 
     prettyPrint() { // TODO: pasar esto al conversor laberinto -> modelo, de algún modo.
-        var strings = this.#getAsStrings();
+        var strings = this.getAsStrings();
         console.log(strings.join('\n'));
     }
 

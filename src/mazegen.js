@@ -1,7 +1,5 @@
 import { getCellsAdjacent, Maze, toCell, toCoords } from './maze.js';
 import * as rand from './external/seedrandom.js';
-import * as readline from 'readline';
-import { read } from 'fs';
 
 /**
  * @param {number} x 
@@ -19,7 +17,7 @@ function mod(x, m) {
  * @param {string?} startingCell 
  * @returns {Maze}
  */
-function generateMazeDfs(rows, cols, seed, startingCell) {
+export function generateMazeDfs(rows, cols, seed, startingCell) {
     const rand = new Math.seedrandom(seed);
     var maze = new Maze(rows, cols);
     /** @type {Set.<string>} */

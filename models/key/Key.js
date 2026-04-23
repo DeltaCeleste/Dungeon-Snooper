@@ -84,10 +84,8 @@ class Key extends THREE.Object3D {
     ]
     var path = new THREE.CatmullRomCurve3(pts, true);
     var handle_options = {depth: 1, steps: 1500, bevelEnabled: false, extrudePath: path};
-    var handle = new THREE.Mesh(new THREE.ExtrudeGeometry (handle_shape, handle_options), this.material);
-    handle.scale.z = 0.1;
-    handle.scale.y = 0.1;
-    handle.scale.x = 0.1;
+    this.handle = new THREE.Mesh(new THREE.ExtrudeGeometry (handle_shape, handle_options), this.material);
+    this.handle.scale.setScalar(0.1);
 
     // El cuerpo principal
     radio = radio*0.1/2
@@ -99,27 +97,27 @@ class Key extends THREE.Object3D {
     var neckbrush = new CSG.Brush (neck , this.material);
     var pointbrush = new CSG.Brush (point , this.material);
     var evaluador = new CSG.Evaluator () ;
-    var body = evaluador.evaluate (neckbrush, pointbrush, CSG.ADDITION);
+    /** @type {THREE.Mesh} */
+    this.body = evaluador.evaluate (neckbrush, pointbrush, CSG.ADDITION);
 
     //Dientes
-    var teethe_shape = this.teeth_deline();
+    var teeth_shape = this.teeth_deline();
     var teeth_options = {depth: 1, steps: 2, bevelEnabled: false};
-    var teeth = new THREE.Mesh(new THREE.ExtrudeGeometry (teethe_shape, teeth_options), this.material);
-    teeth.scale.z = (radio/3);
-    teeth.scale.y = altura/4;
-    teeth.scale.x = altura/3;
+    this.teeth = new THREE.Mesh(new THREE.ExtrudeGeometry (teeth_shape, teeth_options), this.material);
+    this.teeth.scale.set(altura/3, altura/4, radio/3);
+
 
     //Lo posicionamos para unirlo en el extremo del cuerpo
-    teeth.position.y = altura/5;
-    body.add(teeth);
+    this.teeth.position.y = altura/5;
+    this.body.add(this.teeth);
 
     // Lo apoyamos y desplazamos para unirla satisfactoriamente con el aro
-    body.rotation.x = Math.PI/2;
-    body.position.z = altura/2+radio/2+radio;
+    this.body.rotation.x = Math.PI/2;
+    this.body.position.z = altura/2+radio/2+radio;
     //neck.position.y = radio/2+radio;
 
-    base.add(handle);
-    base.add(body);
+    base.add(this.handle);
+    base.add(this.body);
     return base;
   }
 
@@ -189,6 +187,12 @@ class Key extends THREE.Object3D {
   
   update () {
     // No hay nada que actualizar ya que la apertura de la grapadora se ha actualizado desde la interfaz
+  }
+
+  setUserData(parent) {
+    this.handle.userData = parent;
+    this.body.userData = parent;
+    this.teeth.userData = parent;
   }
 }
 

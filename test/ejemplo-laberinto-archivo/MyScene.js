@@ -9,6 +9,9 @@ import { TrackballControls } from 'trackball'
 
 import { MazeModel } from '../../src/mazeModelGenerator.js';
 import { generateMazeDfs } from '../../src/mazegen.js';
+import { PickUp } from '../../src/PickUp.js';
+import { Key } from '../../models/key/Key.js';
+import { Torch } from '../../models/torch/Torch.js';
  
 /// La clase fachada del modelo
 /**
@@ -43,9 +46,45 @@ class MyScene extends THREE.Scene {
         this.axis = new THREE.AxesHelper (0.1);
         this.add (this.axis);
         
-        
+        /** @type {THREE.Object3D[]} */
+        this.pickables = [];
+        this.addPickUps();
+
+        this.mousePosition = new THREE.Vector2();
+        this.mouseRaycast = new THREE.Raycaster();
+        this.mouseRaycast.far = 1000.0;
     }
     
+    addPickUps() {
+        var pickUp1 = new PickUp(new Key(this.gui), 1.0, true);
+        pickUp1.position.set(1, 2, 3);
+        var pickUp2 = new PickUp(new Torch(this.gui), 1.0, true);
+        pickUp2.position.set(-3, 2, -1);
+        this.add(pickUp1);
+        this.add(pickUp2);
+        this.pickables.push(pickUp1, pickUp2);
+    }
+
+    /** @param {PointerEvent} event */
+    onClick(event) {
+        this.mousePosition.set(
+            2 * (event.clientX / window.innerWidth) - 1,
+            1 - 2 * (event.clientY / window.innerHeight),
+        );
+        this.mouseRaycast.setFromCamera(this.mousePosition, this.camera);
+        var collidedObjects = this.mouseRaycast.intersectObjects(this.pickables, true);
+        if(collidedObjects.length > 0) {
+            var pickedMesh = collidedObjects[0].object;
+            if(pickedMesh.userData) {
+                /** @type {THREE.Object3D} */
+                var clickReceiver = pickedMesh.userData;
+                if(clickReceiver.onClick !== undefined) {
+                    clickReceiver.onClick(pickedMesh);
+                }
+            }
+        }
+    }
+
     createMaze(seed) {
         if(this.mazeModel !== undefined) {
             this.remove(this.mazeModel);
@@ -235,7 +274,11 @@ class MyScene extends THREE.Scene {
         
         // Se actualiza el resto del modelo
         this.mazeModel.update();
-        
+        for(let child of this.children) {
+            if(child.update !== undefined) {
+                child.update();
+            }
+        }
         // Este método debe ser llamado cada vez que queramos visualizar la escena de nuevo.
         // Literalmente le decimos al navegador: "La próxima vez que haya que refrescar la pantalla, llama al método que te indico".
         // Si no existiera esta línea,    update()    se ejecutaría solo la primera vez.
@@ -252,7 +295,7 @@ $(function () {
 
     // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
     window.addEventListener ("resize", () => scene.onWindowResize());
-    
+    window.addEventListener("click", (event) => scene.onClick(event));
     // Que no se nos olvide, la primera visualización.
     scene.update();
 });

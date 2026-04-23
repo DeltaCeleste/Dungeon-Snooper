@@ -86,4 +86,9 @@ export class Pickaxe extends THREE.Object3D {
     update() {
 
     }
+
+    setUserData(parent) {
+        this.head.userData = parent;
+        this.handle.userData = parent;
+    }
 }

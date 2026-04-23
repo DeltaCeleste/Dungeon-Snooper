@@ -125,6 +125,14 @@ class Eye extends THREE.Object3D {
         this.leftWing.update(giro)
         this.rightWing.update(giro)
     }
+
+    setUserData(parent) {
+        this.eyeball.userData = parent;
+        this.iris.userData = parent;
+        this.pupil.userData = parent;
+        this.leftWing.setUserData(parent);
+        this.rightWing.setUserData(parent);
+    }
 }
 
 export { Eye }
@@ -202,6 +210,11 @@ class Wing extends THREE.Object3D {
     this.wing.rotation.y = (giro)
     //console.log((-(this.max_rot-this.min_rot)/2))
     //console.log(giro)
+  }
+
+  setUserData(parent) {
+    this.wing.userData = parent;
+    this.foreWing.userData = parent;
   }
 
 }

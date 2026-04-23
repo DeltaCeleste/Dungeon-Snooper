@@ -10,9 +10,9 @@ export class Torch extends THREE.Object3D {
         });
 
         var bodyGeometry = this.createBodyGeometry();
-        var bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
-        bodyMesh.translateY(0.15);
-        this.add(bodyMesh);
+        this.bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        this.bodyMesh.translateY(0.15);
+        this.add(this.bodyMesh);
 
         this.loadFireTextures();
         this.fireFrameCounter = 0;
@@ -33,11 +33,14 @@ export class Torch extends THREE.Object3D {
     addFire() {
         const SIZE = 0.2;
         const originalGeometry = new THREE.PlaneGeometry(SIZE, SIZE);
+        /** @type {THREE.Mesh[]} */
+        this.fireMeshes = [];
         for(let i = 0; i < 4; i++) {
             const rotatedGeometry = originalGeometry.clone().rotateY(Math.PI * i * 0.5);
             var fireMesh = new THREE.Mesh(rotatedGeometry, this.fireMaterial);
             fireMesh.translateY(0.35);
             this.add(fireMesh);
+            this.fireMeshes.push(fireMesh);
         }
     }
 
@@ -124,6 +127,13 @@ export class Torch extends THREE.Object3D {
         if(this.frameTimer === Torch.fireUpdateSpeed) {
             this.updateFireMaterial();
             this.frameTimer = 0;
+        }
+    }
+
+    setUserData(parent) {
+        this.bodyMesh.userData = parent;
+        for(let fireMesh of this.fireMeshes) {
+            fireMesh.userData = parent;
         }
     }
 }

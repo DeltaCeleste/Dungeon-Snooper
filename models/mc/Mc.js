@@ -2,12 +2,12 @@ import * as THREE from 'three'
 import * as CSG from 'csg'
 
 class Mc extends THREE.Object3D {
-  constructor(gui,titleGui) {
+  constructor() {
     super();
     
     // Se crea la parte de la interfaz que corresponde a la grapadora
     // Se crea primero porque otros métodos usan las variables que se definen para la interfaz
-    this.createGUI(gui,titleGui);
+    //this.createGUI(gui,titleGui);
     
     // El material se usa desde varios métodos. Por eso se alamacena en un atributo
     //this.material = new THREE.MeshStandardMaterial({color: 0x885500});
@@ -28,9 +28,9 @@ class Mc extends THREE.Object3D {
     });
     
     // A la base no se accede desde ningún método. Se almacena en una variable local del constructor
-    var radio = 0.01;   
-    var altura = 2.34;
-    var base = this.createEveryNyan(radio, altura);
+    this.radio = 0.01;   
+    this.altura = 2.34;
+    var base = this.createEveryNyan(this.radio, this.altura);
     
     // Al nodo  this, la grapadora, se le cuelgan como hijos la base y la parte móvil
     this.add (base);
@@ -45,11 +45,6 @@ class Mc extends THREE.Object3D {
     
     // Se crea una sección para los controles de la caja
     var folder = gui.addFolder (titleGui);
-    // Estas lineas son las que añaden los componentes de la interfaz
-    // Las tres cifras indican un valor mínimo, un máximo y el incremento
-    folder.add (this.guiControls, 'rotacion', -0.125, 0.2, 0.001)
-      .name ('Apertura : ')
-      .onChange ( (value) => this.setAngulo (-value) );
   }
 
   createEveryNyan(radio, altura) {

@@ -8,7 +8,7 @@ import { TrackballControls } from 'trackball'
 
 // Clases de mi proyecto
 
-import { Mc } from './Mc.js'
+import { Character } from '../../src/Character.js'
 
 
 /// La clase fachada del modelo
@@ -35,10 +35,11 @@ class MyScene extends THREE.Scene {
     this.createLights ();
 
     // Tendremos una cámara con un control de movimiento con el ratón
+    this.cameras = new Array();
     this.createCamera ();
 
     // Un suelo
-    //this.createGround ();
+    this.createGround ();
 
     // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
     // Todas las unidades están en metros
@@ -49,8 +50,20 @@ class MyScene extends THREE.Scene {
     // Por último creamos el modelo.
     // El modelo puede incluir su parte de la interfaz gráfica de usuario. Le pasamos la referencia a
     // la gui y el texto bajo el que se agruparán los controles de la interfaz que añada el modelo.
-    this.model = new Mc();
+    this.model = new Character(1.0);
     this.add (this.model);
+    this.model.translateY(this.model.model.radio*this.model.model.altura);
+    this.cameras.push(this.model.fpcamera)
+
+    this.currentCamera = 0;
+    document.addEventListener("keydown", (event) => {
+        console.log("Pulsado: " + event.code);
+        if(event.code == "Space"){
+          this.currentCamera += 1;
+          this.currentCamera %= this.cameras.length;
+        }
+    }, false);
+
   }
 
   createCamera () {
@@ -75,13 +88,15 @@ class MyScene extends THREE.Scene {
     this.cameraControl.panSpeed = 0.5;
     // Debe orbitar con respecto al punto de mira de la cámara
     this.cameraControl.target = look;
+
+    this.cameras.push(this.camera)
   }
 
   createGround () {
     // El suelo es un Mesh, necesita una geometría y un material.
 
     // La geometría es una caja con muy poca altura
-    var geometryGround = new THREE.BoxGeometry (0.5,0.02,0.5);
+    var geometryGround = new THREE.BoxGeometry (1,0.02,1);
 
     // El material se hará con una textura de madera
     var texture = new THREE.TextureLoader().load('../../imgs/wood.jpg');
@@ -186,7 +201,7 @@ class MyScene extends THREE.Scene {
   getCamera () {
     // En principio se devuelve la única cámara que tenemos
     // Si hubiera varias cámaras, este método decidiría qué cámara devuelve cada vez que es consultado
-    return this.camera;
+    return this.cameras.at(this.currentCamera);
   }
 
   setCameraAspect (ratio) {

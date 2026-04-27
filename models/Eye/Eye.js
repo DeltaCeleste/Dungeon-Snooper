@@ -35,8 +35,8 @@ class Eye extends THREE.Object3D {
     this.rightWing.scale.set(0.1,0.1,0.1)
     this.rightWing.position.set(0.01,0.01,0)
     this.leftWing = new Wing();
-    this.leftWing.position.set(-0.01,0.01,0)
     this.leftWing.scale.set(-0.1,0.1,0.1)
+    this.leftWing.position.set(-0.01,0.01,0)
     
     this.add(this.rightWing)
     this.add(this.leftWing)
@@ -116,7 +116,7 @@ class Eye extends THREE.Object3D {
         this.lerpPupilScale(this.targetPupilScale, 0.1);
 
         //Animación alas--------------------------
-        //var giro = this.max_rot*(Math.sin(this.reloj.getElapsed()+3*Math.PI/2)+1);
+        //var giro = this.max_rot*(Math.sin(this.timer.getElapsed()+3*Math.PI/2)+1);
         let rotationMid = (this.maxRotation-this.minRotation) / 2
         var giro = rotationMid * Math.sin(8 * totalTime + 3*Math.PI/2) + (rotationMid + this.minRotation);
         
@@ -208,6 +208,7 @@ class Wing extends THREE.Object3D {
   update(giro) {
     this.foreWing.rotation.y = (giro*1.5)
     this.wing.rotation.y = (giro)
+    
     //console.log((-(this.max_rot-this.min_rot)/2))
     //console.log(giro)
   }

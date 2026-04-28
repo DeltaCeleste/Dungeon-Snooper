@@ -11,32 +11,25 @@ export class Character extends THREE.Object3D {
         this.model = new Mc();
 
         this.model.scale.setScalar(scale);
-        this.fpcamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.fpcamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.02, 1000);
         this.fpcamera.position.set(0, this.model.altura*this.model.radio, this.radio); 
         this.fpcamera.lookAt(new Vector3(0,0,1));
+        this.initCamRot = this.fpcamera.rotation.x;
 
         this.model.add(this.fpcamera);
         this.add(this.model);
 
+        
         this.movement = new Vector3(0,0,0);
+        this.teclasPresionadas = {};
         document.addEventListener("keydown", (event) => {
-            console.log("Pulsado: " + event.code);
-            switch(event.code) {
-                case "ArrowUp":
-                    this.movement.add(new Vector3(0.01, 0, 0));
-                    break;
-                case "ArrowDown":
-                    this.movement.add(new Vector3(-0.01, 0, 0));
-                    break;
-                case "ArrowLeft":
-                    this.movement.add(new Vector3(0, 0, 0.01));
-                    break;
-                case "ArrowRight":
-                    this.movement.add(new Vector3(0, 0, -0.01));
-                    break;
-                default: break;
-            }
+            //console.log("Pulsado: " + event.code);
+            this.teclasPresionadas[event.code] = true;
         }, false);
+        document.addEventListener('keyup', (event) => {
+            //console.log("Soltado: " + event.code);
+            this.teclasPresionadas[event.code] = false;
+        });
 
         this.mouse = {
             x: 0,
@@ -45,12 +38,48 @@ export class Character extends THREE.Object3D {
         window.addEventListener('mousemove', (event) => {
             // Convertimos la posición del ratón en píxeles a un rango de -1 a +1
             this.mouse.x = -(event.clientX / window.innerWidth) * 2 + 1;
-            this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            this.mouse.y = (event.clientY / window.innerHeight) * 2 - 1;
         });
     }
 
+    getVectorMov(){
+        var dir = new Vector3(0,0,0);
+        this.fpcamera.getWorldDirection(dir)
+        var original = dir.clone();
+        var eje = new THREE.Vector3(0, 1, 0);
+        const candidatas = new Array();
+
+        if(this.teclasPresionadas["KeyW"] == true){
+            candidatas.push(dir.clone())
+        }
+        if(this.teclasPresionadas["KeyS"] == true){
+            dir.applyAxisAngle(eje, Math.PI)
+            candidatas.push(dir.clone());
+            dir = original;
+        }
+        if(this.teclasPresionadas["KeyA"] == true){
+            dir.applyAxisAngle(eje, Math.PI/2)
+            candidatas.push(dir.clone());
+            dir = original;
+        }
+        if(this.teclasPresionadas["KeyD"] == true){
+            dir.applyAxisAngle(eje, -Math.PI/2)
+            candidatas.push(dir.clone());
+            dir = original;
+        }
+        var dirFinal = new Vector3(0,0,0);
+        candidatas.forEach(vec => dirFinal.add(vec));
+
+        //this.logDemanda(dirFinal);
+        //this.logDemanda(candidatas);
+        //this.logDemanda(this.teclasPresionadas);
+        return dirFinal;
+    }
+
     update() {
-        //console.log(this.movement);
+        var dir = this.getVectorMov()
+        this.movement.add(new Vector3(dir.x*0.01, 0, dir.z*0.01));
+
         this.position.add(this.movement);
         this.movement.clampLength(0, 0.1);
         this.movement.multiplyScalar(0.1);
@@ -58,10 +87,15 @@ export class Character extends THREE.Object3D {
         //Movimiento con el ratón
         // Definimos los objetivos de rotación
         const targetRotY = this.mouse.x * Math.PI;
-        const targetRotX = -this.mouse.y * (Math.PI / 4);
+        const targetRotX = this.mouse.y * (Math.PI / 4) + (this.initCamRot);
 
         this.model.rotation.y += (targetRotY - this.model.rotation.y) * 0.1; 
-        this.rotation.x += (targetRotX - this.rotation.x) * 0.1;
+        this.fpcamera.rotation.x = targetRotX;
     }
 
+    logDemanda(printable){
+        if(this.teclasPresionadas["ShiftLeft"]){
+            console.log(printable);
+        }
+    }
 }

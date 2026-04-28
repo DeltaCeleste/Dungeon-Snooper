@@ -57,12 +57,18 @@ class MyScene extends THREE.Scene {
 
     this.currentCamera = 0;
     document.addEventListener("keydown", (event) => {
-        console.log("Pulsado: " + event.code);
+        //console.log("Pulsado: " + event.code);
         if(event.code == "Space"){
           this.currentCamera += 1;
           this.currentCamera %= this.cameras.length;
         }
     }, false);
+
+    //Otro objeto para la referencia de la primera persona
+    var object = new THREE.Mesh(new THREE.SphereGeometry(0.1), new THREE.MeshStandardMaterial({color: 0xFF0000}))
+    object.translateX(1);
+    object.translateZ(1);
+    this.add(object)
 
   }
 

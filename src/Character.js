@@ -42,7 +42,10 @@ export class Character extends THREE.Object3D {
         });
     }
 
+    static PLAYER_SPEED = 0.333
+
     getVectorMov(){
+        const SPEED = Character.PLAYER_SPEED;
         var dir = new Vector3(0,0,0);
         this.fpcamera.getWorldDirection(dir)
         var original = dir.clone();
@@ -50,21 +53,21 @@ export class Character extends THREE.Object3D {
         const candidatas = new Array();
 
         if(this.teclasPresionadas["KeyW"] == true){
-            candidatas.push(dir.clone())
+            candidatas.push(dir.clone().multiplyScalar(SPEED))
         }
         if(this.teclasPresionadas["KeyS"] == true){
             dir.applyAxisAngle(eje, Math.PI)
-            candidatas.push(dir.clone());
+            candidatas.push(dir.clone().multiplyScalar(SPEED));
             dir = original;
         }
         if(this.teclasPresionadas["KeyA"] == true){
             dir.applyAxisAngle(eje, Math.PI/2)
-            candidatas.push(dir.clone());
+            candidatas.push(dir.clone().multiplyScalar(SPEED));
             dir = original;
         }
         if(this.teclasPresionadas["KeyD"] == true){
             dir.applyAxisAngle(eje, -Math.PI/2)
-            candidatas.push(dir.clone());
+            candidatas.push(dir.clone().multiplyScalar(SPEED));
             dir = original;
         }
         var dirFinal = new Vector3(0,0,0);

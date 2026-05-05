@@ -17,10 +17,11 @@ export class PickUp extends THREE.Object3D {
     }
 
     static FloatAmplitude = 0.25;
-    static FloatFrequency = 0.3333;
-    static RotationSpeed = 100.4;
+    static FloatFrequency = 0.6666;
+    static RotationSpeed = 1.4;
 
     update() {
+        this.timer.update();
         // y(t) = y_0 + Asin(kt)
         // dy = Akcos(kt)dt ???
         if(this.model.update !== undefined) {

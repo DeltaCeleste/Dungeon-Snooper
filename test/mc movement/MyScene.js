@@ -66,9 +66,16 @@ class MyScene extends THREE.Scene {
 
     //Otro objeto para la referencia de la primera persona
     var object = new THREE.Mesh(new THREE.SphereGeometry(0.1), new THREE.MeshStandardMaterial({color: 0xFF0000}))
-    object.translateX(1);
-    object.translateZ(1);
+    object.translateX(0.5);
+    object.translateZ(0.5);
+    object.translateY(this.model.model.radio*this.model.model.altura);
+
     this.add(object)
+
+    //Colisión con el objeto
+    var candidatos = new Array();
+    candidatos.push(object);
+    this.model.setCandidatos(candidatos);
 
   }
 

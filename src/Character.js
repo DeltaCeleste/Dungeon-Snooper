@@ -11,8 +11,8 @@ export class Character extends THREE.Object3D {
         this.model = new Mc();
 
         this.model.scale.setScalar(scale);
-        this.fpcamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.02, 1000);
-        this.fpcamera.position.set(0, this.model.altura*this.model.radio, this.radio); 
+        this.fpcamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, this.model.radio*scale*1.3, 1000);
+        this.fpcamera.position.set(0, this.model.altura*this.model.radio*0.8, this.radio); 
         this.fpcamera.lookAt(new Vector3(0,0,1));
         this.initCamRot = this.fpcamera.rotation.x;
 
@@ -40,6 +40,16 @@ export class Character extends THREE.Object3D {
             this.mouse.x = -(event.clientX / window.innerWidth) * 2 + 1;
             this.mouse.y = (event.clientY / window.innerHeight) * 2 - 1;
         });
+
+        //Colisión
+        this.rayo = new THREE.Raycaster () ;
+        this.rayo.far = this.model.radio*2*scale;
+    }
+
+    //Para establecer los candidatos a colisión
+    setCandidatos(candidatos){
+        this.candidatos = candidatos
+        console.log("Cargados candidatos de colisión: " + candidatos)
     }
 
     static PLAYER_SPEED = 0.333
@@ -80,20 +90,36 @@ export class Character extends THREE.Object3D {
     }
 
     update() {
+        //Guardar posición inicial
+        var previousPos = this.position.clone();
+
+        //Movimiento
         var dir = this.getVectorMov()
         this.movement.add(new Vector3(dir.x*0.01, 0, dir.z*0.01));
-
+        
         this.position.add(this.movement);
         this.movement.clampLength(0, 0.1);
         this.movement.multiplyScalar(0.1);
-
+        
         //Movimiento con el ratón
         // Definimos los objetivos de rotación
         const targetRotY = this.mouse.x * Math.PI;
         const targetRotX = this.mouse.y * (Math.PI / 4) + (this.initCamRot);
-
+        
         this.model.rotation.y += (targetRotY - this.model.rotation.y) * 0.1; 
         this.fpcamera.rotation.x = targetRotX;
+        
+        
+        //Colisión
+        var pos = new Vector3(0,0,0);
+        var raydir = this.movement.clone();
+        this.getWorldPosition(pos);
+        this.rayo.set(pos, raydir.normalize());
+        var impactados = this.rayo.intersectObjects(this.candidatos, true);
+        if(impactados.length > 0){
+            console.log("Colisión con: " + impactados)
+            this.position.copy(previousPos);
+        }
     }
 
     logDemanda(printable){

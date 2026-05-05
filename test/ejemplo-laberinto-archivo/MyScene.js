@@ -222,11 +222,12 @@ class MyScene extends THREE.Scene {
         // La luz focal, además tiene una posición, y un punto de mira
         // Si no se le da punto de mira, apuntará al (0,0,0) en coordenadas del mundo
         // En este caso se declara como     this.atributo     para que sea un atributo accesible desde otros métodos.
-        this.pointLight = new THREE.PointLight( 0xffffff, 1.0, 100.0, 0);
+        this.pointLight = new THREE.PointLight( 0xffffff, 100.0, 100.0, 2.0);
         this.pointLight.power = this.guiControls.lightPower;
         this.pointLight.position.set( 0, 9, 0 );
         console.log (this.pointLight);
         this.add (this.pointLight);
+        
     }
     
     setLightPower (valor) {
@@ -253,6 +254,10 @@ class MyScene extends THREE.Scene {
         // Se establece el tamaño, se aprovecha la totalidad de la ventana del navegador
         renderer.setSize(window.innerWidth, window.innerHeight);
         
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        renderer.physicallyCorrectLights = true;
+
         // La visualización se muestra en el lienzo recibido
         $(myCanvas).append(renderer.domElement);
         

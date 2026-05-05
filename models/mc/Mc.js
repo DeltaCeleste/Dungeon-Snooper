@@ -2,7 +2,8 @@ import * as THREE from 'three'
 import * as CSG from 'csg'
 
 class Mc extends THREE.Object3D {
-  constructor() {
+  /** @param {number} scale  */
+  constructor(scale) {
     super();
     
     // Se crea la parte de la interfaz que corresponde a la grapadora
@@ -30,7 +31,7 @@ class Mc extends THREE.Object3D {
     // A la base no se accede desde ningún método. Se almacena en una variable local del constructor
     this.radio = 0.01;   
     this.altura = 2.34;
-    var base = this.createEveryNyan(this.radio, this.altura);
+    var base = this.createEveryNyan(this.radio, this.altura, scale);
     
     // Al nodo  this, la grapadora, se le cuelgan como hijos la base y la parte móvil
     this.add (base);
@@ -47,7 +48,7 @@ class Mc extends THREE.Object3D {
     var folder = gui.addFolder (titleGui);
   }
 
-  createEveryNyan(radio, altura) {
+  createEveryNyan(radio, altura, scale) {
     // El nodo base
     var base = new THREE.Object3D();
     const plano = 0.00001
@@ -195,6 +196,7 @@ class Mc extends THREE.Object3D {
     base.add(arm)
     base.add(arm2)
 
+    base.scale.setScalar(scale);
     return base;
   }
 

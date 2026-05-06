@@ -37,7 +37,9 @@ export class PickUp extends THREE.Object3D {
             this.rotation.y += PickUp.RotationSpeed * delta;
         }
     }
+
     onClick(mesh) {
         console.log(`clicked on ${this.model.constructor.name}`);
+        this.clear()
     }
 }

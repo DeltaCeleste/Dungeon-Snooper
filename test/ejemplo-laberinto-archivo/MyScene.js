@@ -66,10 +66,10 @@ class MyScene extends THREE.Scene {
     addPickUps() {
         var pickUp1 = new PickUp(new Key(this.gui), 0.5, true);
         var pickUp1Pos = this.mazeModel.getRelativePosOfCell(1, 1);
-        pickUp1.position.set(pickUp1Pos.x, pickUp1Pos.y + 0.3, pickUp1Pos.z);
+        pickUp1.position.set(pickUp1Pos.x, pickUp1Pos.y + 0.5, pickUp1Pos.z);
         var pickUp2 = new PickUp(new Torch(this.gui), 1.0, true);
         var pickUp2Pos = this.mazeModel.getRelativePosOfCell(2, 2);
-        pickUp2.position.set(pickUp2Pos.x, pickUp2Pos.y + 0.3, pickUp2Pos.z);
+        pickUp2.position.set(pickUp2Pos.x, pickUp2Pos.y + 0.4, pickUp2Pos.z);
         this.add(pickUp1);
         this.add(pickUp2);
         this.pickables.push(pickUp1, pickUp2);

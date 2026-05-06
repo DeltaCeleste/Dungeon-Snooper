@@ -16,7 +16,7 @@ export class PickUp extends THREE.Object3D {
         this.canSpin = canSpin;
     }
 
-    static FloatAmplitude = 0.25;
+    static FloatAmplitude = 0.1;
     static FloatFrequency = 0.6666;
     static RotationSpeed = 1.4;
 

@@ -54,6 +54,10 @@ class MyScene extends THREE.Scene {
         this.pickables = [];
         this.addPickUps();
 
+        this.collidables = this.pickables.slice();
+        this.collidables.push(...this.mazeModel.blockMeshes);
+        this.player.setCandidatos(this.collidables);
+
         this.mousePosition = new THREE.Vector2();
         this.mouseRaycast = new THREE.Raycaster();
         this.mouseRaycast.far = 1000.0;
@@ -76,7 +80,7 @@ class MyScene extends THREE.Scene {
         this.player = new Character(10);
         var playerPosition = this.mazeModel.getRelativePosOfCell(0,0);
         this.player.position.copy(playerPosition);
-        this.player.position.y = 0.33;
+        this.player.position.y = 0.5;
         this.add(this.player);
     }
 

@@ -38,6 +38,8 @@ export class MazeModel extends THREE.Object3D {
             -(rows / 2) * blockWidth - blockWidth / 4,
         );
 
+        /** @type {THREE.Mesh[]} */ this.blockMeshes = [];
+
         for(let i = 0; i < rows; i++) {
             const thisRow = mazeStrings[i];
             for(let j = 0; j < cols; j++) {
@@ -49,13 +51,17 @@ export class MazeModel extends THREE.Object3D {
                     case '#': {
                         let strongBlockMesh = new THREE.Mesh(blockGeometry, MazeModel.WallMaterial);
                         strongBlockMesh.position.set(thisBlockPosition.x, thisBlockPosition.y, thisBlockPosition.z);
+                        strongBlockMesh.userData = this;
                         this.add(strongBlockMesh);
+                        this.blockMeshes.push(strongBlockMesh);
                         break;
                     }
                     case 'X': {
                         let weakBlockMesh = new THREE.Mesh(blockGeometry, MazeModel.WeakWallMaterial);
                         weakBlockMesh.position.set(thisBlockPosition.x, thisBlockPosition.y, thisBlockPosition.z);
+                        weakBlockMesh.userData = this;
                         this.add(weakBlockMesh);
+                        this.blockMeshes.push(weakBlockMesh);
                         break;
                     }
                     default: break;

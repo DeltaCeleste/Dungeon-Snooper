@@ -48,7 +48,6 @@ export class Character extends THREE.Object3D {
     //Para establecer los candidatos a colisión
     setCandidatos(candidatos){
         this.candidatos = candidatos
-        console.log("Cargados candidatos de colisión: " + candidatos)
     }
 
     static PLAYER_SPEED = 0.333

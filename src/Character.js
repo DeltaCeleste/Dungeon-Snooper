@@ -42,7 +42,7 @@ export class Character extends THREE.Object3D {
 
         //Colisión
         this.rayo = new THREE.Raycaster () ;
-        this.rayo.far = this.model.radio*2*scale;
+        this.rayo.far = this.model.radio*2*n;
     }
 
     //Para establecer los candidatos a colisión
@@ -114,10 +114,12 @@ export class Character extends THREE.Object3D {
         var raydir = this.movement.clone();
         this.getWorldPosition(pos);
         this.rayo.set(pos, raydir.normalize());
-        var impactados = this.rayo.intersectObjects(this.candidatos, true);
-        if(impactados.length > 0){
-            console.log("Colisión con: " + impactados)
-            this.position.copy(previousPos);
+        if(this.candidatos !== undefined) {
+            var impactados = this.rayo.intersectObjects(this.candidatos, true);
+            if(impactados.length > 0){
+                console.log("Colisión con: " + impactados)
+                this.position.copy(previousPos);
+            }
         }
     }
 

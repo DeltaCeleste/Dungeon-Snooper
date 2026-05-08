@@ -70,7 +70,14 @@ class MyScene extends THREE.Scene {
     object.translateZ(0.5);
     object.translateY(this.model.model.radio*this.model.model.altura);
 
+    var cajaFigura1 = new THREE.Box3() ;
+    cajaFigura1.setFromObject (object);
+
+    var cajaVisible = new THREE.Box3Helper(cajaFigura1, 0xFFFF00);
+    //cajaVisible.visible = true;
+
     this.add(object)
+    this.add(cajaVisible)
 
     //Colisión con el objeto
     var candidatos = new Array();

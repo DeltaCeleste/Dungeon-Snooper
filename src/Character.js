@@ -41,8 +41,11 @@ export class Character extends THREE.Object3D {
         });
 
         //Colisión
-        this.rayo = new THREE.Raycaster () ;
-        this.rayo.far = this.model.radio*2*scale;
+        this.rayo = new THREE.Raycaster();
+        this.rayo.far = this.model.radio*4*scale;
+        this.arrowHelper =  new THREE.ArrowHelper( this.rayo.ray.direction, this.rayo.ray.origin, this.rayo.far, 0xFF0000 );
+        this.add( this.arrowHelper );
+        this.modelScale = scale;
     }
 
     //Para establecer los candidatos a colisión
@@ -111,8 +114,11 @@ export class Character extends THREE.Object3D {
         //Colisión
         var pos = new Vector3(0,0,0);
         var raydir = this.movement.clone();
-        this.getWorldPosition(pos);
-        this.rayo.set(pos, raydir.normalize());
+        raydir.normalize();
+        var raydirScaled = raydir.clone().multiplyScalar(this.model.radio * 2);
+        pos.sub(raydirScaled);
+        pos.add(this.getWorldPosition(new Vector3()));
+        this.rayo.set(pos, raydir);
         if(this.candidatos !== undefined) {
             var impactados = this.rayo.intersectObjects(this.candidatos, true);
             if(impactados.length > 0){
@@ -120,6 +126,12 @@ export class Character extends THREE.Object3D {
                 this.position.copy(previousPos);
             }
         }
+
+        this.arrowHelper.dispose()
+        this.remove(this.arrowHelper)
+        this.arrowHelper = new THREE.ArrowHelper( this.rayo.ray.direction, new Vector3(0,0,0).sub(raydirScaled), this.rayo.far, 0xFF0000 );
+        this.add(this.arrowHelper)
+        this.logDemanda(JSON.stringify(new Vector3().sub(raydirScaled)));
     }
 
     logDemanda(printable){

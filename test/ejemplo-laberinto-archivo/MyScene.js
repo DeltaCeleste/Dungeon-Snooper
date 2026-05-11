@@ -24,7 +24,6 @@ class MyScene extends THREE.Scene {
     // la visualización de la escena
     constructor (myCanvas) { 
         super();
-        
         // Lo primero, crear el visualizador, pasándole el lienzo sobre el que realizar los renderizados.
         this.renderer = this.createRenderer(myCanvas);
         
@@ -36,11 +35,19 @@ class MyScene extends THREE.Scene {
         // Todo elemento que se desee sea tenido en cuenta en el renderizado de la escena debe pertenecer a esta. Bien como hijo de la escena (this en esta clase) o como hijo de un elemento que ya esté en la escena.
         // Tras crear cada elemento se añadirá a la escena con     this.add(variable)
         this.createLights ();
+
+        this.createMaze('cocosete');
+        
+        /** @type {THREE.Object3D[]} */
+        this.pickables = [];
+        this.addPickUps();
         
         Character.PLAYER_SPEED = 6.0;
-        this.createMaze('cocosete');
         this.addPlayer();
+        
 
+        this.setupCollisions();
+        
         this.cameras = [];
         this.currentCameraIndex = 0;
         this.setupTrackballCamera();
@@ -50,13 +57,6 @@ class MyScene extends THREE.Scene {
         this.axis = new THREE.AxesHelper (0.1);
         this.add (this.axis);
         
-        /** @type {THREE.Object3D[]} */
-        this.pickables = [];
-        this.addPickUps();
-
-        this.collidables = this.pickables.slice();
-        this.collidables.push(...this.mazeModel.blockMeshes);
-        this.player.setCandidatos(this.collidables);
 
         this.mousePosition = new THREE.Vector2();
         this.mouseRaycast = new THREE.Raycaster();
@@ -107,18 +107,28 @@ class MyScene extends THREE.Scene {
     createMaze(seed) {
         if(this.mazeModel !== undefined) {
             this.remove(this.mazeModel);
+            this.mazeModel = undefined;
+            this.collidables = this.collidables.filter((obj) => (obj instanceof PickUp));
         }
         this.maze = generateMazeDfs(15, 15, seed);
         let mazeStrings = this.maze.getAsStrings();
         
         // Por último creamos el modelo.
         // Le pasamos una variable de sincronizacion
+        let canReturn = false;
         var mazeLoaded = $.Deferred();
-        this.mazeModel = new MazeModel(mazeStrings, 0.5, 1.5);
+        this.mazeModel = new MazeModel(mazeLoaded, mazeStrings, 0.5, 1.5);
         this.add (this.mazeModel);
         mazeLoaded.done (() => {
-            
+            canReturn = true;
         });
+        while(!canReturn); // Ya sé, la espera ocupada está mal, pero qué se le va a hacer
+    }
+
+    setupCollisions() {
+        this.collidables = this.pickables.slice();
+        this.collidables = this.collidables.concat(this.mazeModel.blockMeshes);
+        this.player.setCandidatos(this.collidables);
     }
 
     setupTrackballCamera () {
@@ -183,6 +193,7 @@ class MyScene extends THREE.Scene {
             seed: 'cocosete',
             regen: () => {
                 this.createMaze(this.guiControls.seed);
+                this.setupCollisions();
             }
         }
 

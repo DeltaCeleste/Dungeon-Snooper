@@ -115,7 +115,7 @@ export class Character extends THREE.Object3D {
         var pos = new Vector3(0,0,0);
         var raydir = this.movement.clone();
         raydir.normalize();
-        var raydirScaled = raydir.clone().multiplyScalar(this.model.radio * 2);
+        var raydirScaled = raydir.clone().multiplyScalar(this.model.radio * this.modelScale * 2);
         pos.sub(raydirScaled);
         pos.add(this.getWorldPosition(new Vector3()));
         this.rayo.set(pos, raydir);

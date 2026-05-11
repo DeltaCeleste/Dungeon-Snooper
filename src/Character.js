@@ -115,7 +115,7 @@ export class Character extends THREE.Object3D {
         var pos = new Vector3(0,0,0);
         var raydir = this.movement.clone();
         raydir.normalize();
-        var raydirScaled = raydir.clone().multiplyScalar(this.model.radio * 2);
+    var raydirScaled = raydir.clone().multiplyScalar(this.model.radio * this.modelScale);
         pos.sub(raydirScaled);
         pos.add(this.getWorldPosition(new Vector3()));
         this.rayo.set(pos, raydir);
@@ -123,7 +123,7 @@ export class Character extends THREE.Object3D {
             var impactados = this.rayo.intersectObjects(this.candidatos, true);
             if(impactados.length > 0){
                 console.log("Colisión con: " + impactados)
-                this.position.copy(previousPos);
+            this.position.copy(previousPos);
             }
         }
 
@@ -131,7 +131,7 @@ export class Character extends THREE.Object3D {
         this.remove(this.arrowHelper)
         this.arrowHelper = new THREE.ArrowHelper( this.rayo.ray.direction, new Vector3(0,0,0).sub(raydirScaled), this.rayo.far, 0xFF0000 );
         this.add(this.arrowHelper)
-        this.logDemanda(JSON.stringify(new Vector3().sub(raydirScaled)));
+        //this.logDemanda(JSON.stringify(new Vector3().sub(raydirScaled)));
     }
 
     logDemanda(printable){

@@ -37,7 +37,7 @@ class MyScene extends THREE.Scene {
         // Tras crear cada elemento se añadirá a la escena con     this.add(variable)
         this.createLights ();
         
-        Character.PLAYER_SPEED = 6.0;
+        Character.PLAYER_SPEED = 3.0;
         this.createMaze('cocosete');
         this.addPlayer();
 

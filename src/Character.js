@@ -5,7 +5,7 @@ import { Vector3 } from 'three';
 
 export class Character extends THREE.Object3D {
     /** @param {THREE.Object3D} pickupModel @param {number} scale  @param {boolean} canSpin  */
-    constructor(scale) {
+    constructor(scale, renderer) {
         super();
         this.timer = new THREE.Timer();
         this.model = new Mc(scale);
@@ -30,14 +30,29 @@ export class Character extends THREE.Object3D {
             this.teclasPresionadas[event.code] = false;
         });
 
+        //Movimiento de camara
         this.mouse = {
             x: 0,
-            y: 0
+            y: 0,
+            sensitivity: 0.002
         };
         window.addEventListener('mousemove', (event) => {
+            /* Old version
             // Convertimos la posición del ratón en píxeles a un rango de -1 a +1
             this.mouse.x = -(event.clientX / window.innerWidth) * 2 + 1;
-            this.mouse.y = (event.clientY / window.innerHeight) * 2 - 1;
+            this.mouse.y = (event.clientY / window.innerHeight) * 2 - 1;*/
+
+            this.mouse.y -= event.movementX * this.mouse.sensitivity;
+            this.mouse.x -= event.movementY * this.mouse.sensitivity;
+
+            const minPitch = -Math.PI / 2 + 0.1;
+            const maxPitch = Math.PI / 2 - 0.1;
+            this.mouse.x = Math.max(minPitch, Math.min(maxPitch, this.mouse.x));
+        });
+        document.addEventListener('keydown', (event) => {
+            if(event.code == 'AltLeft'){
+                renderer.domElement.requestPointerLock();
+            }
         });
 
         //Colisión
@@ -103,19 +118,24 @@ export class Character extends THREE.Object3D {
         this.movement.multiplyScalar(0.1);
         
         //Movimiento con el ratón
+        /* Old version
         // Definimos los objetivos de rotación
         const targetRotY = this.mouse.x * Math.PI;
         const targetRotX = this.mouse.y * (Math.PI / 4) + (this.initCamRot);
         
         this.model.rotation.y += (targetRotY - this.model.rotation.y) * 0.1; 
-        this.fpcamera.rotation.x = targetRotX;
+        this.fpcamera.rotation.x = targetRotX;*/
+
+        this.model.rotation.y = (this.mouse.y);
+
+        this.fpcamera.rotation.x = -this.mouse.x + (this.initCamRot);
         
         
         //Colisión
         var pos = new Vector3(0,0,0);
         var raydir = this.movement.clone();
         raydir.normalize();
-    var raydirScaled = raydir.clone().multiplyScalar(this.model.radio * this.modelScale);
+        var raydirScaled = raydir.clone().multiplyScalar(this.model.radio * this.modelScale * 2);
         pos.sub(raydirScaled);
         pos.add(this.getWorldPosition(new Vector3()));
         this.rayo.set(pos, raydir);

@@ -5,8 +5,8 @@ export class MazeModel extends THREE.Object3D {
     static WallMaterial = new THREE.MeshStandardMaterial({ color: THREE.Color.NAMES.white });
     static WeakWallMaterial = new THREE.MeshStandardMaterial({ color: THREE.Color.NAMES.bisque });
 
-    /** @param {string[]} mazeStrings @param {number} blockWidth @param {number} blockHeight */
-    constructor(mazeStrings, blockWidth, blockHeight) {
+    /** @param {unknown} deferred @param {string[]} mazeStrings @param {number} blockWidth @param {number} blockHeight */
+    constructor(deferred, mazeStrings, blockWidth, blockHeight) {
         super();
         this.blockWidth = blockWidth;
         this.blockHeight = blockHeight;
@@ -76,6 +76,9 @@ export class MazeModel extends THREE.Object3D {
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.position.set(-0.5 * blockWidth, 0, -0.5 * blockWidth);
         this.add(floor);
+        if(deferred !== null && deferred !== undefined) {
+            deferred.resolve();
+        }
     }
 
     update() { /* Intencionalmente en blanco */ }

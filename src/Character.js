@@ -15,6 +15,26 @@ export class Character extends THREE.Object3D {
         this.fpcamera.lookAt(new Vector3(0,0,1));
         this.initCamRot = this.fpcamera.rotation.x;
 
+        const material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+        // Crear una cruz simple
+        const points = [];
+        points.push(new THREE.Vector3(0, 0.01, 0));
+        points.push(new THREE.Vector3(0, -0.01, 0));
+        points.push(new THREE.Vector3(0, 0, 0));
+        points.push(new THREE.Vector3(0.01, 0, 0));
+        points.push(new THREE.Vector3(-0.01, 0, 0));
+
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, material);
+
+        // Posicionar frente a la cámara
+        line.position.set(0, 0, -this.model.altura*this.model.radio*scale);
+        line.renderOrder = 999;
+        line.material.depthTest = false;
+        line.material.depthWrite = false;
+        this.fpcamera.add(line);
+
+
         this.model.add(this.fpcamera);
         this.add(this.model);
 
@@ -61,11 +81,14 @@ export class Character extends THREE.Object3D {
         this.arrowHelper =  new THREE.ArrowHelper( this.rayo.ray.direction, this.rayo.ray.origin, this.rayo.far, 0xFF0000 );
         this.add( this.arrowHelper );
         this.modelScale = scale;
+
+        //Objetos iniciales
+        this.pickaxe = false;
     }
 
     //Para establecer los candidatos a colisión
     setCandidatos(candidatos){
-        this.candidatos = candidatos
+        /** @type {THREE.Object3D[]} */ this.candidatos = candidatos
     }
 
     static PLAYER_SPEED = 0.333
@@ -103,6 +126,22 @@ export class Character extends THREE.Object3D {
         //this.logDemanda(candidatas);
         //this.logDemanda(this.teclasPresionadas);
         return dirFinal;
+    }
+
+    addItem(item){
+        if(item === 'Pickaxe'){
+            this.pickaxe = true;
+        }
+        console.log(`${item} equipado`)
+        //updateModel() //Para añadir el objeto al modelo si se quiere
+    }
+
+    removeCollidable(collidableToRemove) {
+        const idx = this.candidatos.findIndex((collidable) => collidable === collidableToRemove);
+        console.log(idx)
+        if(idx !== -1) {
+            this.candidatos.splice(idx, 1);
+        }
     }
 
     update() {

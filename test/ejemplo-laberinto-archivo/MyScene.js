@@ -12,6 +12,7 @@ import { generateMazeDfs } from '../../src/mazegen.js';
 import { PickUp } from '../../src/PickUp.js';
 import { Key } from '../../models/key/Key.js';
 import { Torch } from '../../models/torch/Torch.js';
+import { Pickaxe } from '../../models/pickaxe/Pickaxe.js';
 import { Character } from '../../src/Character.js'
  
 /// La clase fachada del modelo
@@ -60,19 +61,31 @@ class MyScene extends THREE.Scene {
 
         this.mousePosition = new THREE.Vector2();
         this.mouseRaycast = new THREE.Raycaster();
-        this.mouseRaycast.far = 1000.0;
+        this.mouseRaycast.far = this.mazeModel.blockWidth*3;
     }
     
     addPickUps() {
         var pickUp1 = new PickUp(new Key(this.gui), 0.5, true);
-        var pickUp1Pos = this.mazeModel.getRelativePosOfCell(1, 1);
-        pickUp1.position.set(pickUp1Pos.x, pickUp1Pos.y + 0.5, pickUp1Pos.z);
+        this.locatePickUp(pickUp1, 1, 1, 0.5)
         var pickUp2 = new PickUp(new Torch(this.gui), 1.0, true);
-        var pickUp2Pos = this.mazeModel.getRelativePosOfCell(2, 2);
-        pickUp2.position.set(pickUp2Pos.x, pickUp2Pos.y + 0.4, pickUp2Pos.z);
+        this.locatePickUp(pickUp2, 2, 2, 0.4)
+        var pickUpPickaxe = new PickUp(new Pickaxe(this.gui), 2, true);
+        this.locatePickUp(pickUpPickaxe, 1, 2, 0.5);
         this.add(pickUp1);
         this.add(pickUp2);
-        this.pickables.push(pickUp1, pickUp2);
+        this.add(pickUpPickaxe);
+        this.pickables.push(pickUp1, pickUp2, pickUpPickaxe);
+
+        // Weak Walls, no son pickUps pero los trataremos como tal para la interacción
+        this.pickables = this.pickables.concat(this.mazeModel.weakBlockMeshes);
+
+        // Muros normales también para prevenir de la interacción a través de las paredes
+        this.pickables = this.pickables.concat(this.mazeModel.blockMeshes);
+    }
+
+    locatePickUp(pickUp, row, column, floatY){
+        var pickUpPos = this.mazeModel.getRelativePosOfCell(row, column);
+        pickUp.position.set(pickUpPos.x, pickUpPos.y + floatY, pickUpPos.z)
     }
 
     addPlayer() {
@@ -98,9 +111,25 @@ class MyScene extends THREE.Scene {
                 /** @type {THREE.Object3D} */
                 var clickReceiver = pickedMesh.userData;
                 if(clickReceiver.onClick !== undefined) {
-                    clickReceiver.onClick(pickedMesh);
+                    var item = clickReceiver.onClick(pickedMesh);
+                    this.player.addItem(item);
+                }
+                else{ // Es un muro
+                    if(this.player.pickaxe && pickedMesh.name == 'WeakBlock'){
+                        console.log(pickedMesh)
+                        this.player.removeCollidable(pickedMesh);
+                        this.removePickUpable(pickedMesh);
+                        pickedMesh.parent.remove(pickedMesh);
+                    }
                 }
             }
+        }
+    }
+
+    removePickUpable(pickUpToRemove) {
+        const idx = this.pickables.findIndex((pickUp) => pickUp === pickUpToRemove);
+        if(idx !== -1) {
+            this.pickables.splice(idx, 1);
         }
     }
 
@@ -127,7 +156,7 @@ class MyScene extends THREE.Scene {
 
     setupCollisions() {
         this.collidables = this.pickables.slice();
-        this.collidables = this.collidables.concat(this.mazeModel.blockMeshes);
+        //this.collidables = this.collidables.concat(this.mazeModel.blockMeshes);
         this.player.setCandidatos(this.collidables);
     }
 

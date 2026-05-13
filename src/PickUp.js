@@ -39,7 +39,9 @@ export class PickUp extends THREE.Object3D {
     }
 
     onClick(mesh) {
-        console.log(`clicked on ${this.model.constructor.name}`);
         this.clear()
+        console.log(`clicked on ${this.model.constructor.name}`);
+        return this.model.constructor.name;
+        
     }
 }

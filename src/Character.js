@@ -76,10 +76,20 @@ export class Character extends THREE.Object3D {
         });
 
         //Colisión
-        this.rayo = new THREE.Raycaster();
-        this.rayo.far = this.model.radio*4*scale;
-        this.arrowHelper =  new THREE.ArrowHelper( this.rayo.ray.direction, this.rayo.ray.origin, this.rayo.far, 0xFF0000 );
-        this.add( this.arrowHelper );
+        /** @type {THREE.Raycaster[]} */ this.raycasts = [new THREE.Raycaster(), new THREE.Raycaster()];
+        for(const raycast of this.raycasts) {
+            raycast.far = this.model.radio*4*scale;
+        }
+
+        this.showDebugRaycasts = false;
+
+        /** @type {THREE.ArrowHelper[]} */ this.debugRaycastVisualizers = [];
+        for(const raycast of this.raycasts) {
+            this.debugRaycastVisualizers.push(
+                new THREE.ArrowHelper(raycast.ray.direction, raycast.ray.origin, raycast.ray.far, THREE.Color.NAMES.red)
+            );
+        }
+        
         this.modelScale = scale;
 
         //Objetos iniciales
@@ -172,25 +182,45 @@ export class Character extends THREE.Object3D {
         
         //Colisión
         var pos = new Vector3(0,0,0);
+
         var raydir = this.movement.clone();
         raydir.normalize();
         var raydirScaled = raydir.clone().multiplyScalar(this.model.radio * this.modelScale * 2);
+
         pos.sub(raydirScaled);
         pos.add(this.getWorldPosition(new Vector3()));
-        this.rayo.set(pos, raydir);
-        if(this.candidatos !== undefined) {
-            var impactados = this.rayo.intersectObjects(this.candidatos, true);
-            if(impactados.length > 0){
-                console.log("Colisión con: " + impactados)
-            this.position.copy(previousPos);
+
+        const up = new Vector3(0,1,0);
+        const raycastLeftSideOffset = new Vector3();
+        raycastLeftSideOffset.crossVectors(raydir, up); // vector de movimiento × la vertical = vector de desplazamiento lateral
+        raycastLeftSideOffset.multiplyScalar(this.model.radio * this.modelScale * 1.25); // Y lo escalamos por el radio
+        const raycast0Pos = pos.clone().add(raycastLeftSideOffset);
+        const raycast1Pos = pos.clone().sub(raycastLeftSideOffset);
+        this.raycasts[0].set(raycast0Pos, raydir);
+        this.raycasts[1].set(raycast1Pos, raydir);
+
+        if(this.candidatos !== undefined) 
+          for(const raycast of this.raycasts) {
+            const hitObjects = raycast.intersectObjects(this.candidatos, true);
+            if(hitObjects.length > 0) {
+                this.position.copy(previousPos);
+                break; // no hace falta comprobar más raycastss
             }
         }
 
-        this.arrowHelper.dispose()
-        this.remove(this.arrowHelper)
-        this.arrowHelper = new THREE.ArrowHelper( this.rayo.ray.direction, new Vector3(0,0,0).sub(raydirScaled), this.rayo.far, 0xFF0000 );
-        this.add(this.arrowHelper)
-        //this.logDemanda(JSON.stringify(new Vector3().sub(raydirScaled)));
+        if(this.showDebugRaycasts) 
+          for(let i = 0; i < this.raycasts.length; i++) {
+            const currRaycast = this.raycasts[i];
+            this.debugRaycastVisualizers[i].dispose();
+            this.remove(this.debugRaycastVisualizers[i]);
+            this.debugRaycastVisualizers[i] = new THREE.ArrowHelper(
+                currRaycast.ray.direction,
+                this.worldToLocal(currRaycast.ray.origin),
+                currRaycast.far,
+                THREE.Color.NAMES.red
+            );
+            this.add(this.debugRaycastVisualizers[i]);
+        }
     }
 
     logDemanda(printable){

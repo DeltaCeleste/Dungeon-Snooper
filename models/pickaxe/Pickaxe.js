@@ -24,6 +24,9 @@ export class Pickaxe extends THREE.Object3D {
         this.handle.translateY(0.065);
         this.add(this.head)
         this.add(this.handle);
+
+        this.hitbox = this.createHitbox();
+        this.add(this.hitbox);
     }
 
     createHeadGeometry() {
@@ -83,12 +86,22 @@ export class Pickaxe extends THREE.Object3D {
         return new THREE.CylinderGeometry(0.004, 0.004, 0.12, 8, 6);
     }
 
+    createHitbox() {
+        const hitboxGeometry = new THREE.BoxGeometry(0.1, 0.2, 0.05);
+        hitboxGeometry.translate(0, 0.1, 0);
+        const hitboxMaterial = new THREE.MeshStandardMaterial({
+            color: THREE.Color.NAMES.green,
+            transparent: true,
+            opacity: 0,
+        });
+        return new THREE.Mesh(hitboxGeometry, hitboxMaterial);
+    }
+
     update() {
 
     }
 
     setUserData(parent) {
-        this.head.userData = parent;
-        this.handle.userData = parent;
+        this.hitbox.userData = parent;
     }
 }

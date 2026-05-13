@@ -32,7 +32,8 @@ class Key extends THREE.Object3D {
     var radio = 0.5;   
     var altura = 1;
     var base = this.createBody(radio, altura);
-    
+    this.hitbox = this.createHitbox(radio, altura);
+    this.add(this.hitbox);
     // Al nodo  this, la grapadora, se le cuelgan como hijos la base y la parte móvil
     this.add (base);
 
@@ -51,6 +52,18 @@ class Key extends THREE.Object3D {
     folder.add (this.guiControls, 'rotacion', -0.125, 0.2, 0.001)
       .name ('Apertura : ')
       .onChange ( (value) => this.setAngulo (-value) );
+  }
+
+  /** @param {number} radius @param {number} height */
+  createHitbox(radius, height) {
+    const hitboxGeometry = new THREE.BoxGeometry(radius, height, height * 1.5);
+    hitboxGeometry.translate(0, 0, height / 2);
+    const hitboxMaterial = new THREE.MeshStandardMaterial({
+      color: THREE.Color.NAMES.green,
+      transparent: true,
+      opacity: 0,
+    });
+    return new THREE.Mesh(hitboxGeometry, hitboxMaterial);
   }
 
   createBody(radio, altura) {
@@ -190,9 +203,7 @@ class Key extends THREE.Object3D {
   }
 
   setUserData(parent) {
-    this.handle.userData = parent;
-    this.body.userData = parent;
-    this.teeth.userData = parent;
+    this.hitbox.userData = parent;
   }
 }
 

@@ -40,6 +40,9 @@ class Eye extends THREE.Object3D {
     
     this.add(this.rightWing)
     this.add(this.leftWing)
+
+    this.hitbox = this.createHitbox();
+    this.add(this.hitbox);
   }
 
   addPupil() {
@@ -63,6 +66,16 @@ class Eye extends THREE.Object3D {
         this.iris = new THREE.Mesh(irisGeometry, irisMaterial);
         this.addPupil();
         this.eyeball.add(this.iris);
+    }
+
+    createHitbox() {
+        const hitboxGeometry = new THREE.BoxGeometry(0.05, 0.05, 0.05);
+        const hitboxMaterial = new THREE.MeshStandardMaterial({
+            color: THREE.Color.NAMES.green,
+            transparent: true,
+            opacity: 0.5
+        });
+        return new THREE.Mesh(hitboxGeometry, hitboxMaterial);
     }
 
     addIrisRotation(rotX = undefined, rotZ = undefined) {
@@ -127,9 +140,7 @@ class Eye extends THREE.Object3D {
     }
 
     setUserData(parent) {
-        this.eyeball.userData = parent;
-        this.iris.userData = parent;
-        this.pupil.userData = parent;
+        this.hitbox.userData = parent;
         this.leftWing.setUserData(parent);
         this.rightWing.setUserData(parent);
     }
@@ -159,8 +170,10 @@ class Wing extends THREE.Object3D {
     
     this.wing.add(this.foreWing)
     base.add(this.wing)
-
     this.add(base);
+
+    this.hitbox = this.createHitbox();
+    this.add(this.hitbox);
   }
 
   foreWingShape(){
@@ -213,9 +226,19 @@ class Wing extends THREE.Object3D {
     //console.log(giro)
   }
 
+  createHitbox() {
+    const hitboxGeometry = new THREE.BoxGeometry(1, 1, 1);
+    hitboxGeometry.translate(0.65, 0, 0);
+    const hitboxMaterial = new THREE.MeshStandardMaterial({
+      color: THREE.Color.NAMES.green,
+      transparent: true,
+      opacity: 0.5
+    });
+    return new THREE.Mesh(hitboxGeometry, hitboxMaterial);
+  }
+
   setUserData(parent) {
-    this.wing.userData = parent;
-    this.foreWing.userData = parent;
+    this.hitbox.userData = parent;
   }
 
 }

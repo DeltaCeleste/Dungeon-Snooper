@@ -28,6 +28,9 @@ export class Torch extends THREE.Object3D {
         this.add(fireLight);
 
         this.frameTimer = 0;
+
+        this.hitbox = this.createHitbox();
+        this.add(this.hitbox);
     }
 
     addFire() {
@@ -130,10 +133,18 @@ export class Torch extends THREE.Object3D {
         }
     }
 
+    createHitbox() {
+        const hitboxGeometry = new THREE.BoxGeometry(0.25, 0.3, 0.25);
+        hitboxGeometry.translate(0, 0.14, 0);
+        const hitboxMaterial = new THREE.MeshStandardMaterial({
+            color: THREE.Color.NAMES.green,
+            transparent: true,
+            opacity: 0,
+        });
+        return new THREE.Mesh(hitboxGeometry, hitboxMaterial);
+    }
+
     setUserData(parent) {
-        this.bodyMesh.userData = parent;
-        for(let fireMesh of this.fireMeshes) {
-            fireMesh.userData = parent;
-        }
+        this.hitbox.userData = parent;
     }
 }

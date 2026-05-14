@@ -85,7 +85,7 @@ class MyScene extends THREE.Scene {
     addPickUps() {
         var pickUp1 = new PickUp(new Key(this.gui), 0.5, true);
         this.locatePickUp(pickUp1, 1, 1, 0.5)
-        var pickUp2 = new PickUp(new Eye(this.gui), 1.0, false);
+        var pickUp2 = new PickUp(new Torch(this.gui), 1.0, false);
         this.locatePickUp(pickUp2, 2, 2, 0.4)
         var pickUpPickaxe = new PickUp(new Pickaxe(this.gui), 2, true);
         this.locatePickUp(pickUpPickaxe, 1, 2, 0.5);

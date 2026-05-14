@@ -15,6 +15,7 @@ export class Character extends THREE.Object3D {
         this.fpcamera.lookAt(new Vector3(0,0,1));
         this.initCamRot = this.fpcamera.rotation.x;
 
+        // Cruceta -------------------------------------------------------------
         const material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
         // Crear una cruz simple
         const points = [];

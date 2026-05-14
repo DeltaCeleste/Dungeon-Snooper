@@ -15,6 +15,7 @@ import { Torch } from '../../models/torch/Torch.js';
 import { Pickaxe } from '../../models/pickaxe/Pickaxe.js';
 import { Eye } from '../../models/Eye/Eye.js';
 import { Character } from '../../src/Character.js'
+import { ArbitraryTimer } from '../../src/Timer.js';
  
 /// La clase fachada del modelo
 /**
@@ -46,16 +47,27 @@ class MyScene extends THREE.Scene {
         
         this.addPickUps();
         
-        Character.PLAYER_SPEED = 3.0;
+        Character.PLAYER_SPEED = 6.0;
         this.addPlayer();
         
 
         this.setupCollisions();
         
+        //Cameras setup
         this.cameras = [];
         this.currentCameraIndex = 0;
         this.setupTrackballCamera();
         this.cameras.push(this.player.fpcamera);
+        this.IDX_FP_CAMERA = this.cameras.length-1;
+        //Camara aérea
+        const distancia = 23;
+        this.floatCamera = new THREE.OrthographicCamera(-distancia/2, distancia/2, distancia/2, -distancia/2, 1, distancia*2)
+        this.floatCamera.position.set(0, distancia, 0); 
+        this.floatCamera.lookAt(new THREE.Vector3(0,0,0));
+        this.add(this.floatCamera);
+        this.cameras.push(this.floatCamera);
+        this.IDX_FLOATING_CAMERA = this.cameras.length-1; 
+
         // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
         // Todas las unidades están en metros
         this.axis = new THREE.AxesHelper (0.1);
@@ -65,12 +77,15 @@ class MyScene extends THREE.Scene {
         this.mousePosition = new THREE.Vector2();
         this.mouseRaycast = new THREE.Raycaster();
         this.mouseRaycast.far = this.mazeModel.blockWidth*3;
+
+        this.timer = new ArbitraryTimer();
+        this.EYE_VISION_TIME = 5000;
     }
     
     addPickUps() {
         var pickUp1 = new PickUp(new Key(this.gui), 0.5, true);
         this.locatePickUp(pickUp1, 1, 1, 0.5)
-        var pickUp2 = new PickUp(new Torch(this.gui), 1.0, true);
+        var pickUp2 = new PickUp(new Eye(this.gui), 1.0, false);
         this.locatePickUp(pickUp2, 2, 2, 0.4)
         var pickUpPickaxe = new PickUp(new Pickaxe(this.gui), 2, true);
         this.locatePickUp(pickUpPickaxe, 1, 2, 0.5);
@@ -168,7 +183,12 @@ class MyScene extends THREE.Scene {
                 var clickReceiver = pickedMesh.userData;
                 if(clickReceiver.onClick !== undefined) {
                     var item = clickReceiver.onClick(pickedMesh);
-                    this.player.addItem(item);
+                    if(item == 'Eye'){
+                        this.currentCameraIndex = this.IDX_FLOATING_CAMERA;
+                        this.getCamera()
+                        this.timer.start(this.EYE_VISION_TIME)
+                    }
+                    else this.player.addItem(item);
                 }
                 else{ // Es un muro
                     if(this.player.pickaxe && pickedMesh.name == 'WeakBlock'){
@@ -350,6 +370,15 @@ class MyScene extends THREE.Scene {
     }
 
     update () {
+        //Comprobamos si se acaba el timer del ojo, si es que estuviera en modo aereo
+        if(this.timer.isRunning){
+            console.log(this.timer.getTimeLeft());
+            if(this.timer.hasFinished()){
+                this.timer.stop();
+                this.currentCameraIndex = this.IDX_FP_CAMERA;
+            }
+        }
+
         // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
         this.renderer.render (this, this.getCamera());
 

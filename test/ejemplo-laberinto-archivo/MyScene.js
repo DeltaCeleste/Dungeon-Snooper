@@ -13,6 +13,7 @@ import { PickUp } from '../../src/PickUp.js';
 import { Key } from '../../models/key/Key.js';
 import { Torch } from '../../models/torch/Torch.js';
 import { Pickaxe } from '../../models/pickaxe/Pickaxe.js';
+import { Eye } from '../../models/Eye/Eye.js';
 import { Character } from '../../src/Character.js'
  
 /// La clase fachada del modelo
@@ -25,6 +26,10 @@ class MyScene extends THREE.Scene {
     // la visualización de la escena
     constructor (myCanvas) { 
         super();
+
+        /** @type {THREE.Object3D[]} */
+        this.pickables = [];
+
         // Lo primero, crear el visualizador, pasándole el lienzo sobre el que realizar los renderizados.
         this.renderer = this.createRenderer(myCanvas);
         
@@ -39,8 +44,6 @@ class MyScene extends THREE.Scene {
 
         this.createMaze('cocosete');
         
-        /** @type {THREE.Object3D[]} */
-        this.pickables = [];
         this.addPickUps();
         
         Character.PLAYER_SPEED = 3.0;
@@ -71,16 +74,29 @@ class MyScene extends THREE.Scene {
         this.locatePickUp(pickUp2, 2, 2, 0.4)
         var pickUpPickaxe = new PickUp(new Pickaxe(this.gui), 2, true);
         this.locatePickUp(pickUpPickaxe, 1, 2, 0.5);
+        var pickUpEye = new PickUp(new Eye(this.gui), 2, true);
+        this.locatePickUp(pickUpEye, 2, 1, 0.5);
+        
         this.add(pickUp1);
         this.add(pickUp2);
         this.add(pickUpPickaxe);
-        this.pickables.push(pickUp1, pickUp2, pickUpPickaxe);
+        this.add(pickUpEye);
+        this.pickables.push(pickUp1, pickUp2, pickUpPickaxe, pickUpEye);
 
         // Weak Walls, no son pickUps pero los trataremos como tal para la interacción
         this.pickables = this.pickables.concat(this.mazeModel.weakBlockMeshes);
 
         // Muros normales también para prevenir de la interacción a través de las paredes
         this.pickables = this.pickables.concat(this.mazeModel.blockMeshes);
+    }
+
+    resetPickUps(){
+        this.pickables.forEach(element => {
+            if(element instanceof PickUp){
+                this.remove(element)
+            }
+        });
+        this.pickables = []
     }
 
     locatePickUp(pickUp, row, column, floatY){
@@ -95,6 +111,46 @@ class MyScene extends THREE.Scene {
         this.player.position.copy(playerPosition);
         this.player.position.y = 0.5;
         this.add(this.player);
+    }
+
+    removePickUpable(pickUpToRemove) {
+        const idx = this.pickables.findIndex((pickUp) => pickUp === pickUpToRemove);
+        if(idx !== -1) {
+            this.pickables.splice(idx, 1);
+        }
+    }
+
+    createMaze(seed) {
+        if(this.mazeModel !== undefined) {
+            this.remove(this.mazeModel);
+            this.mazeModel = undefined;
+            //this.collidables = this.collidables.filter((obj) => (obj instanceof PickUp));
+        }
+        this.maze = generateMazeDfs(15, 15, seed);
+        let mazeStrings = this.maze.getAsStrings();
+        
+        // Por último creamos el modelo.
+        // Le pasamos una variable de sincronizacion
+        let canReturn = false;
+        var mazeLoaded = $.Deferred();
+        this.mazeModel = new MazeModel(mazeLoaded, mazeStrings, 0.5, 1.5);
+        this.add (this.mazeModel);
+        mazeLoaded.done (() => {
+            canReturn = true;
+        });
+        while(!canReturn); // Ya sé, la espera ocupada está mal, pero qué se le va a hacer
+
+        if(this.pickables.length > 0){
+            this.resetPickUps();
+            this.addPickUps();
+            this.setupCollisions();
+        }
+    }
+
+    setupCollisions() {
+        this.collidables = this.pickables.slice();
+        //this.collidables = this.collidables.concat(this.mazeModel.blockMeshes);
+        this.player.setCandidatos(this.collidables);
     }
 
     /** @param {PointerEvent} event */
@@ -124,40 +180,6 @@ class MyScene extends THREE.Scene {
                 }
             }
         }
-    }
-
-    removePickUpable(pickUpToRemove) {
-        const idx = this.pickables.findIndex((pickUp) => pickUp === pickUpToRemove);
-        if(idx !== -1) {
-            this.pickables.splice(idx, 1);
-        }
-    }
-
-    createMaze(seed) {
-        if(this.mazeModel !== undefined) {
-            this.remove(this.mazeModel);
-            this.mazeModel = undefined;
-            this.collidables = this.collidables.filter((obj) => (obj instanceof PickUp));
-        }
-        this.maze = generateMazeDfs(15, 15, seed);
-        let mazeStrings = this.maze.getAsStrings();
-        
-        // Por último creamos el modelo.
-        // Le pasamos una variable de sincronizacion
-        let canReturn = false;
-        var mazeLoaded = $.Deferred();
-        this.mazeModel = new MazeModel(mazeLoaded, mazeStrings, 0.5, 1.5);
-        this.add (this.mazeModel);
-        mazeLoaded.done (() => {
-            canReturn = true;
-        });
-        while(!canReturn); // Ya sé, la espera ocupada está mal, pero qué se le va a hacer
-    }
-
-    setupCollisions() {
-        this.collidables = this.pickables.slice();
-        //this.collidables = this.collidables.concat(this.mazeModel.blockMeshes);
-        this.player.setCandidatos(this.collidables);
     }
 
     setupTrackballCamera () {
@@ -244,10 +266,12 @@ class MyScene extends THREE.Scene {
             .name ('Mostrar ejes : ')
             .onChange ( (value) => this.setAxisVisible (value) );
         
-        folder.add(this.guiControls, 'seed')
+        var map = gui.addFolder ('Mapa');
+
+        map.add(this.guiControls, 'seed')
             .name('Semilla');
 
-        folder.add(this.guiControls, 'regen')
+        map.add(this.guiControls, 'regen')
             .name('Regenerar laberinto');
         
         return gui;

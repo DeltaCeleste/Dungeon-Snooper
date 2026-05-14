@@ -94,6 +94,7 @@ export class Character extends THREE.Object3D {
 
         //Objetos iniciales
         this.pickaxe = false;
+        this.key = false;
     }
 
     //Para establecer los candidatos a colisión
@@ -142,7 +143,10 @@ export class Character extends THREE.Object3D {
         if(item === 'Pickaxe'){
             this.pickaxe = true;
         }
-        console.log(`${item} equipado`)
+        else if(item === 'Key'){
+            this.key = true;
+        }
+        //console.log(`${item} equipado`)
         //updateModel() //Para añadir el objeto al modelo si se quiere
     }
 

@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
 import { Mc } from '../models/mc/Mc.js';
+import { Torch } from '../../models/torch/Torch.js';
+import { Pickaxe } from '../../models/pickaxe/Pickaxe.js';
 import { Vector3 } from 'three';
 
 export class Character extends THREE.Object3D {
@@ -96,6 +98,8 @@ export class Character extends THREE.Object3D {
         //Objetos iniciales
         this.pickaxe = false;
         this.key = false;
+        this.eye = false;
+        this.torch = false;
     }
 
     //Para establecer los candidatos a colisión
@@ -142,13 +146,54 @@ export class Character extends THREE.Object3D {
 
     addItem(item){
         if(item === 'Pickaxe'){
-            this.pickaxe = true;
+            this.addPickaxe();
         }
         else if(item === 'Key'){
             this.key = true;
         }
+        else if(item === 'Eye'){
+            this.eye = true;
+        }
+        else if(item === 'Torch'){
+            this.addTorch();
+        }
         //console.log(`${item} equipado`)
         //updateModel() //Para añadir el objeto al modelo si se quiere
+    }
+
+    addPickaxe(){
+        if(!this.pickaxe){
+            this.pickaxe = true;
+            this.picoModel = new Pickaxe();
+            this.picoModel.rotation.y = 5*Math.PI/8;
+            this.picoModel.scale.setScalar(0.15*this.modelScale);
+            this.picoModel.position.set(-this.model.radio*this.modelScale, 0, this.model.radio*this.modelScale*1.7);
+            this.model.add(this.picoModel);
+        }
+    }
+
+    addTorch(){
+        if(!this.torch){
+            this.torch = true;
+            this.antorchaModel = new Torch();
+            this.antorchaModel.scale.setScalar(0.05*this.modelScale);
+            this.antorchaModel.position.set(this.model.radio*this.modelScale*0.8, 0, this.model.radio*this.modelScale*1.7);
+            this.model.add(this.antorchaModel);
+        }
+    }
+
+    removeItem(item){
+        if(item === 'Eye'){
+            this.eye = false;
+        }
+        else if(item === 'Torch'){
+            this.removeTorch();
+        }
+    }
+
+    removeTorch(){
+        this.torch = false;
+        this.model.remove(this.antorchaModel);
     }
 
     removeCollidable(collidableToRemove) {
@@ -182,7 +227,14 @@ export class Character extends THREE.Object3D {
 
         this.model.rotation.y = (this.mouse.y);
 
-        this.fpcamera.rotation.x = -this.mouse.x + (this.initCamRot);
+        if(!this.eye){
+            this.fpcamera.rotation.x = -this.mouse.x + (this.initCamRot);
+        }   
+        else this.fpcamera.rotation.x = Math.PI;
+
+        if(this.torch){
+            this.antorchaModel.update();
+        }
         
         
         //Colisión

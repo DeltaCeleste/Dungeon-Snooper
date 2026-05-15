@@ -83,7 +83,8 @@ class MyScene extends THREE.Scene {
     var candidatos = new Array();
     candidatos.push(object);
     this.model.setCandidatos(candidatos);
-
+    this.model.addTorch();
+    this.model.addPickaxe();
   }
 
   createCamera () {

@@ -78,8 +78,10 @@ class MyScene extends THREE.Scene {
         this.mouseRaycast = new THREE.Raycaster();
         this.mouseRaycast.far = this.mazeModel.blockWidth*3;
 
-        this.timer = new ArbitraryTimer();
+        this.eyeTimer = new ArbitraryTimer();
+        this.torchTimer = new ArbitraryTimer();
         this.EYE_VISION_TIME = 5000;
+        this.TORCH_LIGHT_TIME = 10000;
     }
     
     addPickUps() {
@@ -87,6 +89,8 @@ class MyScene extends THREE.Scene {
         this.locatePickUp(pickUp1, 1, 1, 0.5)
         var pickUp2 = new PickUp(new Torch(this.gui), 1.0, false);
         this.locatePickUp(pickUp2, 2, 2, 0.4)
+        var pickUpTorch2 = new PickUp(new Torch(this.gui), 1.0, false);
+        this.locatePickUp(pickUpTorch2, 0, 2, 0.4)
         var pickUpPickaxe = new PickUp(new Pickaxe(this.gui), 2, true);
         this.locatePickUp(pickUpPickaxe, 1, 2, 0.5);
         var pickUpEye = new PickUp(new Eye(this.gui), 2, true);
@@ -94,9 +98,10 @@ class MyScene extends THREE.Scene {
         
         this.add(pickUp1);
         this.add(pickUp2);
+        this.add(pickUpTorch2);
         this.add(pickUpPickaxe);
         this.add(pickUpEye);
-        this.pickables.push(pickUp1, pickUp2, pickUpPickaxe, pickUpEye);
+        this.pickables.push(pickUp1, pickUp2, pickUpTorch2, pickUpPickaxe, pickUpEye);
 
         // Weak Walls, no son pickUps pero los trataremos como tal para la interacción
         this.pickables = this.pickables.concat(this.mazeModel.weakBlockMeshes);
@@ -186,9 +191,13 @@ class MyScene extends THREE.Scene {
                     if(item == 'Eye'){
                         this.currentCameraIndex = this.IDX_FLOATING_CAMERA;
                         this.getCamera()
-                        this.timer.start(this.EYE_VISION_TIME)
+                        this.eyeTimer.start(this.EYE_VISION_TIME);
                     }
-                    else this.player.addItem(item);
+                    else if(item == 'Torch'){
+                        var timeleft = this.torchTimer.getTimeLeft();
+                        this.torchTimer.start(this.TORCH_LIGHT_TIME+timeleft);
+                    }
+                    this.player.addItem(item);
                 }
                 else{ // Es un muro
                     if(this.player.pickaxe && pickedMesh.name == 'WeakBlock'){
@@ -371,11 +380,21 @@ class MyScene extends THREE.Scene {
 
     update () {
         //Comprobamos si se acaba el timer del ojo, si es que estuviera en modo aereo
-        if(this.timer.isRunning){
-            console.log(this.timer.getTimeLeft());
-            if(this.timer.hasFinished()){
-                this.timer.stop();
+        if(this.eyeTimer.isRunning){
+            console.log(this.eyeTimer.getTimeLeft());
+            if(this.eyeTimer.hasFinished()){
+                this.eyeTimer.stop();
                 this.currentCameraIndex = this.IDX_FP_CAMERA;
+                this.player.removeItem('Eye');
+            }
+        }
+
+        //Comprobamos cuanto tiempo de luz le queda a la antorcha para eliminarla si esta se apaga
+        if(this.torchTimer.isRunning){
+            console.log(this.torchTimer.getTimeLeft());
+            if(this.torchTimer.hasFinished()){
+                this.torchTimer.stop();
+                this.player.removeItem('Torch');
             }
         }
 

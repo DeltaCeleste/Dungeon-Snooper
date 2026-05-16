@@ -69,11 +69,11 @@ class Eye extends THREE.Object3D {
     }
 
     createHitbox() {
-        const hitboxGeometry = new THREE.BoxGeometry(0.05, 0.05, 0.05);
+        const hitboxGeometry = new THREE.BoxGeometry(0.08, 0.1, 0.08);
         const hitboxMaterial = new THREE.MeshStandardMaterial({
             color: THREE.Color.NAMES.green,
             transparent: true,
-            opacity: 0.5
+            opacity: 0.1
         });
         return new THREE.Mesh(hitboxGeometry, hitboxMaterial);
     }
@@ -232,7 +232,7 @@ class Wing extends THREE.Object3D {
     const hitboxMaterial = new THREE.MeshStandardMaterial({
       color: THREE.Color.NAMES.green,
       transparent: true,
-      opacity: 0.5
+      opacity: 0.1
     });
     return new THREE.Mesh(hitboxGeometry, hitboxMaterial);
   }

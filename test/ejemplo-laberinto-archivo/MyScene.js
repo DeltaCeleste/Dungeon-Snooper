@@ -93,7 +93,7 @@ class MyScene extends THREE.Scene {
         this.locatePickUp(pickUpTorch2, 0, 2, 0.4)
         var pickUpPickaxe = new PickUp(new Pickaxe(this.gui), 2, true);
         this.locatePickUp(pickUpPickaxe, 1, 2, 0.5);
-        var pickUpEye = new PickUp(new Eye(this.gui), 2, true);
+        var pickUpEye = new PickUp(new Eye(this.gui), 2, false);
         this.locatePickUp(pickUpEye, 2, 1, 0.5);
         
         this.add(pickUp1);
@@ -108,6 +108,8 @@ class MyScene extends THREE.Scene {
 
         // Muros normales también para prevenir de la interacción a través de las paredes
         this.pickables = this.pickables.concat(this.mazeModel.blockMeshes);
+
+        this.pickables.push(this.mazeModel.door);
     }
 
     resetPickUps(){
@@ -187,7 +189,7 @@ class MyScene extends THREE.Scene {
                 /** @type {THREE.Object3D} */
                 var clickReceiver = pickedMesh.userData;
                 if(clickReceiver.onClick !== undefined) {
-                    var item = clickReceiver.onClick(pickedMesh);
+                    var item = clickReceiver.onClick(pickedMesh, this.player);
                     if(item == 'Eye'){
                         this.currentCameraIndex = this.IDX_FLOATING_CAMERA;
                         this.getCamera()
@@ -200,7 +202,7 @@ class MyScene extends THREE.Scene {
                     this.player.addItem(item);
                 }
                 else{ // Es un muro
-                    if(this.player.pickaxe && pickedMesh.name == 'WeakBlock'){
+                    if(this.player.hasGottenPick && pickedMesh.name == 'WeakBlock'){
                         console.log(pickedMesh)
                         this.player.removeCollidable(pickedMesh);
                         this.removePickUpable(pickedMesh);

@@ -96,10 +96,13 @@ export class Character extends THREE.Object3D {
         this.modelScale = scale;
 
         //Objetos iniciales
-        this.pickaxe = false;
-        this.key = false;
-        this.eye = false;
-        this.torch = false;
+        this.hasGottenPick = false;
+        this.hasGottenKey = false;
+        this.hasGottenEye = false;
+        this.hasGottenTorch = false;
+        this.currentlyHasEye = false;
+        this.currrentlyHasTorch = false;
+
     }
 
     //Para establecer los candidatos a colisión
@@ -149,10 +152,11 @@ export class Character extends THREE.Object3D {
             this.addPickaxe();
         }
         else if(item === 'Key'){
-            this.key = true;
+            this.hasGottenKey = true;
         }
         else if(item === 'Eye'){
-            this.eye = true;
+            this.hasGottenEye = true;
+            this.currentlyHasEye = true;
         }
         else if(item === 'Torch'){
             this.addTorch();
@@ -162,8 +166,8 @@ export class Character extends THREE.Object3D {
     }
 
     addPickaxe(){
-        if(!this.pickaxe){
-            this.pickaxe = true;
+        if(!this.hasGottenPick){
+            this.hasGottenPick = true;
             this.picoModel = new Pickaxe();
             this.picoModel.rotation.y = 5*Math.PI/8;
             this.picoModel.scale.setScalar(0.15*this.modelScale);
@@ -173,8 +177,9 @@ export class Character extends THREE.Object3D {
     }
 
     addTorch(){
-        if(!this.torch){
-            this.torch = true;
+        this.hasGottenTorch = true;
+        if(!this.currrentlyHasTorch){
+            this.currrentlyHasTorch = true;
             this.antorchaModel = new Torch();
             this.antorchaModel.scale.setScalar(0.05*this.modelScale);
             this.antorchaModel.position.set(this.model.radio*this.modelScale*0.8, 0, this.model.radio*this.modelScale*1.7);
@@ -184,7 +189,7 @@ export class Character extends THREE.Object3D {
 
     removeItem(item){
         if(item === 'Eye'){
-            this.eye = false;
+            this.currentlyHasEye = false;
         }
         else if(item === 'Torch'){
             this.removeTorch();
@@ -192,7 +197,7 @@ export class Character extends THREE.Object3D {
     }
 
     removeTorch(){
-        this.torch = false;
+        this.currrentlyHasTorch = false;
         this.model.remove(this.antorchaModel);
     }
 
@@ -227,12 +232,12 @@ export class Character extends THREE.Object3D {
 
         this.model.rotation.y = (this.mouse.y);
 
-        if(!this.eye){
+        if(!this.currentlyHasEye){
             this.fpcamera.rotation.x = -this.mouse.x + (this.initCamRot);
         }   
         else this.fpcamera.rotation.x = Math.PI;
 
-        if(this.torch){
+        if(this.currrentlyHasTorch){
             this.antorchaModel.update();
         }
         

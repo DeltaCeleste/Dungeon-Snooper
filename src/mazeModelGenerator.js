@@ -1,7 +1,9 @@
 import * as THREE from 'three'
 import { toCoords } from './maze.js';
+import { Door } from './Door.js';
 
 export class MazeModel extends THREE.Object3D {
+    static EdgeMaterial = new THREE.MeshStandardMaterial({ color: THREE.Color.NAMES.aliceblue });
     static WallMaterial = new THREE.MeshStandardMaterial({ color: THREE.Color.NAMES.white });
     static WeakWallMaterial = new THREE.MeshStandardMaterial({ color: THREE.Color.NAMES.bisque });
 
@@ -15,6 +17,7 @@ export class MazeModel extends THREE.Object3D {
             console.error(error);
         });
         MazeModel.WallMaterial.map = wallTexture;
+        MazeModel.EdgeMaterial.map = wallTexture;
         const weakWallTexture = loader.load('/imgs/wall-weak.png', (_) => {}, (_) => {}, (error) => {
             console.error(error);
         });
@@ -48,12 +51,19 @@ export class MazeModel extends THREE.Object3D {
                 const thisBlockPosition = topLeftBlockPosition.clone();
                 thisBlockPosition.add(new THREE.Vector3(j * blockWidth, 0, i * blockWidth));
 
+                if(i == rows - 1 && j >= rows - 3 && j != rows - 1) {
+                    continue; // Las últimas dos celdas no se tocan para hacer espacio para la puerta
+                }
+
                 switch(thisCell) {
                     case '#': {
                         let strongBlockMesh = new THREE.Mesh(blockGeometry, MazeModel.WallMaterial);
                         strongBlockMesh.name = 'Block'
                         strongBlockMesh.position.set(thisBlockPosition.x, thisBlockPosition.y, thisBlockPosition.z);
                         strongBlockMesh.userData = this;
+                        if(i == 0 || i == rows - 1 || j == 0 || j == cols - 1) {
+                            strongBlockMesh.material = MazeModel.EdgeMaterial;
+                        }
                         this.add(strongBlockMesh);
                         this.blockMeshes.push(strongBlockMesh);
                         break;
@@ -78,12 +88,21 @@ export class MazeModel extends THREE.Object3D {
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.position.set(-0.5 * blockWidth, 0, -0.5 * blockWidth);
         this.add(floor);
+        
+        this.door = new Door();
+        this.door.position.copy(topLeftBlockPosition);
+        this.door.position.z += (rows - 1) * blockWidth;
+        this.door.position.x += (cols - 2.5) * blockWidth;
+        this.door.rotation.y = Math.PI;
+        this.add(this.door);
         if(deferred !== null && deferred !== undefined) {
             deferred.resolve();
         }
     }
 
-    update() { /* Intencionalmente en blanco */ }
+    update() {
+        this.door.update();
+    }
 
     /** @param {number} row @param {number} col  @returns {Vector3} */
     getRelativePosOfCell(row, col) {

@@ -7,19 +7,22 @@ export class DoorModel extends THREE.Object3D {
     constructor() {
         const DOOR_SCALE = DoorModel.DOOR_SCALE;
         super();
+        const loader = new THREE.TextureLoader();
         const doorShape = this.createDoorShape();
-        this.doorFrame = this.createDoorFrame(doorShape);
-        this.door = this.createDoor(doorShape);
+        this.doorFrame = this.createDoorFrame(doorShape, loader);
+        /** @type {THREE.Mesh} */ this.doorHandle;
+        this.door = this.createDoor(doorShape, loader);
         this.door.position.set(-DOOR_SCALE, 0, 0);
         this.add(this.doorFrame);
         this.add(this.door);
 
         this.timer = new THREE.Timer();
+        this.targetAngle = 0.0;
     }
 
     static DOOR_SCALE = 0.4;
-    /** @param {THREE.Shape} shape  */
-    createDoor(shape) {
+    /** @param {THREE.Shape} shape  @param {THREE.TextureLoader} loader */
+    createDoor(shape, loader) {
         const DOOR_SCALE = DoorModel.DOOR_SCALE;
         const doorGeometry = new THREE.ExtrudeGeometry(shape, {
             steps: 1,
@@ -30,23 +33,29 @@ export class DoorModel extends THREE.Object3D {
             bevelSize: 0.1,
             bevelThickness: 0.1,
         });
+        const doorTexture = loader.load('/imgs/wood.jpg', (_) => {}, (_) => {}, (e) => console.error(e));
+        doorTexture.wrapS = THREE.RepeatWrapping;
+        doorTexture.wrapT = THREE.RepeatWrapping;
         doorGeometry.translate(1, 1, 0) // Para que el centro de la geometría esté en la bisagra
                     .scale(DOOR_SCALE, DOOR_SCALE, DOOR_SCALE);
         const doorMaterial = new THREE.MeshStandardMaterial({
-            color: THREE.Color.NAMES.darkkhaki
+            color: THREE.Color.NAMES.beige,
+            map: doorTexture,
         });
         const doorMesh = new THREE.Mesh(doorGeometry, doorMaterial);
-        const doorHandle = this.createDoorHandle();
-        doorHandle.position.set(1.6 * DOOR_SCALE, 1.3 * DOOR_SCALE, 0.3 * DOOR_SCALE);
-        doorMesh.add(doorHandle);
+        this.doorHandle = this.createDoorHandle();
+        this.doorHandle.position.set(1.6 * DOOR_SCALE, 1.3 * DOOR_SCALE, 0.3 * DOOR_SCALE);
+        doorMesh.add(this.doorHandle);
         return doorMesh;
     }
 
-    /** @param {THREE.Shape} shape @returns {THREE.Mesh} */
-    createDoorFrame(shape) {
+    /** @param {THREE.Shape} shape @param {THREE.TextureLoader} loader  @returns {THREE.Mesh} */
+    createDoorFrame(shape, loader) {
         const DOOR_SCALE = DoorModel.DOOR_SCALE;
+        const frameTexture = loader.load('/imgs/wall-strong.png', (_) => {}, (_) => {}, (e) => console.error(e))
         const frameBlockMaterial = new THREE.MeshStandardMaterial({
-            color: THREE.Color.NAMES.darkgray,
+            color: THREE.Color.NAMES.aliceblue,
+            map: frameTexture,
         });
         const frameBlock = new THREE.BoxGeometry(1.0, 1.5, 0.5).translate(0, 0.75, 0);
         const doorSubtractChunkGeometry = new THREE.ExtrudeGeometry(shape, {
@@ -92,17 +101,28 @@ export class DoorModel extends THREE.Object3D {
     }
 
     doAnimationOpen() {
-
+        this.targetAngle = 2 * Math.PI / 3 - 0.2; // El -0.2 es porque exactamente en 2π/3 se clipea con el marco visiblemente
     }
 
     doAnimationClose() {
-
+        this.targetAngle = 0.0;
     }
 
+    static OPEN_SPEED = 1.5;
+
     update() {
-        const totalTime = this.timer.getElapsed();
         const deltaTime = this.timer.getDelta();
-        this.door.rotateY(Math.sin(totalTime) * deltaTime)
+        const angleDiff = this.targetAngle - this.door.rotation.y;
+        if(Math.abs(angleDiff) >= 0.01) {
+            this.door.rotation.y += DoorModel.OPEN_SPEED * angleDiff * deltaTime
+        }
         this.timer.update();
+    }
+
+    /** @param {any} parent  */
+    setUserData(parent) {
+        this.door.userData = parent;
+        this.doorFrame.userData = parent;
+        this.doorHandle.userData = parent;
     }
 }

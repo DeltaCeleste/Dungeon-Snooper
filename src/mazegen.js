@@ -24,7 +24,7 @@ export function generateMazeDfs(rows, cols, seed, startingCell) {
     var visited = new Set();
     /** @type {string[]} funciona como una pila, para hacer DFS */
     var frontier = [];
-    if(startingCell === null | startingCell === undefined) {
+    if(startingCell === null || startingCell === undefined) {
         let row = mod(rand.int32(), rows);
         let col = mod(rand.int32(), cols);
         startingCell = toCell(row, col);

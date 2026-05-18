@@ -7,25 +7,20 @@ import { TrackballControls } from 'trackball'
 
 // Clases de mi proyecto
 
-import { MazeModel } from '../../src/mazeModelGenerator.js';
-import { generateMazeDfs } from '../../src/mazegen.js';
-import { PickUp } from '../../src/PickUp.js';
-import { Key } from '../../models/key/Key.js';
-import { Torch } from '../../models/torch/Torch.js';
-import { Pickaxe } from '../../models/pickaxe/Pickaxe.js';
-import { Eye } from '../../models/Eye/Eye.js';
-import { Character } from '../../src/Character.js'
-import { ArbitraryTimer } from '../../src/Timer.js';
+import { MazeModel } from './mazeModelGenerator.js';
+import { generateMazeDfs } from './mazegen.js';
+import { PickUp } from './PickUp.js';
+import { Key } from '../models/key/Key.js';
+import { Torch } from '../models/torch/Torch.js';
+import { Pickaxe } from '../models/pickaxe/Pickaxe.js';
+import { Eye } from '../models/Eye/Eye.js';
+import { Character } from './Character.js'
+import { ArbitraryTimer } from './Timer.js';
  
-/// La clase fachada del modelo
-/**
- * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
- */
 
-class MyScene extends THREE.Scene {
-    // Recibe el    div    que se ha creado en el    html    que va a ser el lienzo en el que mostrar
-    // la visualización de la escena
-    constructor (myCanvas) { 
+export class GameScene extends THREE.Scene {
+    /** @param {string} myCanvas @param {string} seed  */
+    constructor (myCanvas, seed) { 
         super();
 
         /** @type {THREE.Object3D[]} */
@@ -34,16 +29,13 @@ class MyScene extends THREE.Scene {
         // Lo primero, crear el visualizador, pasándole el lienzo sobre el que realizar los renderizados.
         this.renderer = this.createRenderer(myCanvas);
         
-        // Se crea la interfaz gráfica de usuario
-        this.gui = this.createGUI ();
-        
         // Construimos los distinos elementos que tendremos en la escena
         
         // Todo elemento que se desee sea tenido en cuenta en el renderizado de la escena debe pertenecer a esta. Bien como hijo de la escena (this en esta clase) o como hijo de un elemento que ya esté en la escena.
         // Tras crear cada elemento se añadirá a la escena con     this.add(variable)
         this.createLights ();
 
-        this.createMaze('cocosete');
+        this.createMaze(seed);
         
         this.addPickUps();
         
@@ -56,7 +48,6 @@ class MyScene extends THREE.Scene {
         //Cameras setup
         this.cameras = [];
         this.currentCameraIndex = 0;
-        this.setupTrackballCamera();
         this.cameras.push(this.player.fpcamera);
         this.IDX_FP_CAMERA = this.cameras.length-1;
         //Camara aérea
@@ -85,15 +76,15 @@ class MyScene extends THREE.Scene {
     }
     
     addPickUps() {
-        var pickUp1 = new PickUp(new Key(this.gui), 0.5, true);
+        var pickUp1 = new PickUp(new Key(), 0.5, true);
         this.locatePickUp(pickUp1, 1, 1, 0.5)
-        var pickUp2 = new PickUp(new Torch(this.gui), 1.0, true);
+        var pickUp2 = new PickUp(new Torch(), 1.0, false);
         this.locatePickUp(pickUp2, 2, 2, 0.4)
-        var pickUpTorch2 = new PickUp(new Torch(this.gui), 1.0, false);
+        var pickUpTorch2 = new PickUp(new Torch(), 1.0, false);
         this.locatePickUp(pickUpTorch2, 0, 2, 0.4)
-        var pickUpPickaxe = new PickUp(new Pickaxe(this.gui), 2, true);
+        var pickUpPickaxe = new PickUp(new Pickaxe(), 2, true);
         this.locatePickUp(pickUpPickaxe, 1, 2, 0.5);
-        var pickUpEye = new PickUp(new Eye(this.gui), 2, false);
+        var pickUpEye = new PickUp(new Eye(), 2, false);
         this.locatePickUp(pickUpEye, 2, 1, 0.5);
         
         this.add(pickUp1);
@@ -214,32 +205,6 @@ class MyScene extends THREE.Scene {
             }
         }
     }
-
-    setupTrackballCamera () {
-        // Para crear una cámara le indicamos
-        //     El ángulo del campo de visión vértical en grados sexagesimales
-        //     La razón de aspecto ancho/alto
-        //     Los planos de recorte cercano y lejano
-        var trackballCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 100);
-        // También se indica dónde se coloca
-        trackballCamera.position.set (0, 10, 10);
-        // Y hacia dónde mira
-        var look = new THREE.Vector3 (0,0,0);
-        trackballCamera.lookAt(look);
-        this.add (trackballCamera);
-        
-        // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
-        var trackballCameraControl = new TrackballControls (trackballCamera, this.renderer.domElement);
-        
-        // Se configuran las velocidades de los movimientos
-        trackballCameraControl.rotateSpeed = 5;
-        trackballCameraControl.zoomSpeed = -2;
-        trackballCameraControl.panSpeed = 0.5;
-        // Debe orbitar con respecto al punto de mira de la cámara
-        trackballCameraControl.target = look;
-        this.cameras.push(trackballCamera);
-        this.cameraControl = trackballCameraControl;
-    }
     
     createGround () {
         // El suelo es un Mesh, necesita una geometría y un material.
@@ -315,7 +280,8 @@ class MyScene extends THREE.Scene {
         // La luz ambiental solo tiene un color y una intensidad
         // Se declara como     var     y va a ser una variable local a este método
         //        se hace así puesto que no va a ser accedida desde otros métodos
-        this.ambientLight = new THREE.AmbientLight('white', this.guiControls.ambientIntensity);
+        this.AMBIENT_INTENSITY = 0.2;
+        this.ambientLight = new THREE.AmbientLight('white', this.AMBIENT_INTENSITY);
         // La añadimos a la escena
         this.add (this.ambientLight);
         
@@ -323,10 +289,11 @@ class MyScene extends THREE.Scene {
         // La luz focal, además tiene una posición, y un punto de mira
         // Si no se le da punto de mira, apuntará al (0,0,0) en coordenadas del mundo
         // En este caso se declara como     this.atributo     para que sea un atributo accesible desde otros métodos.
+        const POINT_LIGHT_POWER = 2.0;
         this.pointLight = new THREE.PointLight( 0xffffff, 100.0, 100.0, 2.0);
-        this.pointLight.power = this.guiControls.lightPower;
+        this.pointLight.power = POINT_LIGHT_POWER;
         this.pointLight.position.set( 0, 9, 0 );
-        //console.log (this.pointLight);
+        console.log (this.pointLight);
         this.add (this.pointLight);
         
     }
@@ -385,19 +352,19 @@ class MyScene extends THREE.Scene {
     update () {
         //Comprobamos si se acaba el timer del ojo, si es que estuviera en modo aereo
         if(this.eyeTimer.isRunning){
-            //console.log(this.eyeTimer.getTimeLeft());
+            console.log(this.eyeTimer.getTimeLeft());
             if(this.eyeTimer.hasFinished()){
                 this.eyeTimer.stop();
                 this.currentCameraIndex = this.IDX_FP_CAMERA;
                 this.player.removeItem('Eye');
-                this.setAmbientIntensity(this.guiControls.ambientIntensity)
+                this.setAmbientIntensity(this.AMBIENT_INTENSITY)
                 this.ambientLight.color.setHex(0xFFFFFF);
             }
         }
 
         //Comprobamos cuanto tiempo de luz le queda a la antorcha para eliminarla si esta se apaga
         if(this.torchTimer.isRunning){
-            //console.log(this.torchTimer.getTimeLeft());
+            console.log(this.torchTimer.getTimeLeft());
             if(this.torchTimer.hasFinished()){
                 this.torchTimer.stop();
                 this.player.removeItem('Torch');
@@ -406,9 +373,6 @@ class MyScene extends THREE.Scene {
 
         // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
         this.renderer.render (this, this.getCamera());
-
-        // Se actualiza la posición de la cámara según su controlador
-        this.cameraControl.update();
         
         // Se actualiza el resto del modelo
         this.mazeModel.update();
@@ -434,20 +398,3 @@ class MyScene extends THREE.Scene {
 }
 
 
-/// La función     main
-$(function () {
-    
-    // Se instancia la escena pasándole el    div    que se ha creado en el html para visualizar
-    var scene = new MyScene("#WebGL-output");
-
-    // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
-    window.addEventListener ("resize", () => scene.onWindowResize());
-    window.addEventListener("click", (event) => scene.onClick(event));
-    window.addEventListener("keypress", (event) => {
-        if(event.key === ' ') {
-            scene.switchCamera()
-        }
-    })
-    // Que no se nos olvide, la primera visualización.
-    scene.update();
-});

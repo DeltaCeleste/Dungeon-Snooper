@@ -184,6 +184,14 @@ class MyScene extends THREE.Scene {
     // Si no existiera esta línea,  update()  se ejecutaría solo la primera vez.
     requestAnimationFrame(() => this.update())
   }
+
+  onClick() {
+    if(this.model.targetAngle > 0) {
+      this.model.doAnimationClose();
+    } else {
+      this.model.doAnimationOpen();
+    }
+  }
 }
 
 
@@ -195,7 +203,7 @@ $(function () {
 
   // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
   window.addEventListener ("resize", () => scene.onWindowResize());
-
+  window.addEventListener('click', () => scene.onClick());
   // Que no se nos olvide, la primera visualización.
   scene.update();
 });

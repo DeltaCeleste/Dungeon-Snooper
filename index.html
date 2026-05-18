@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Ejemplo: Crear el laberinto desde un archivo</title>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="./libs/jquery.js"></script>
+    
+    <!-- input type="file"  id="fileInput" -->
+
+    <script type="importmap">
+          { "imports": { "three"       : "./libs/three.module.js" ,
+                         "gui"         : "./libs/dat.gui.module.js" ,
+                         "trackball"   : "./libs/TrackballControls.js",
+                         "csg"         : "./libs/three-bvh-csg.js" } }
+    </script>
+    
+    <script type="module" src="./main.js" defer></script>    
+    <style>
+        body{
+            margin: 0;
+            overflow: hidden; 
+        }
+    </style>
+</head>
+<body>
+
+<!-- Div which will hold the Output -->
+    <div id="menu">
+        <h1>Dungeon Snooper</h1>
+        <h5>Ajustes del juego</h5>
+        <form id="game-form">
+            <label for="seed">Semilla para generar el laberinto: </label>
+            <input type="text" name="seed" value="laberinto"> <br>
+            <label for="difficulty">Dificultad: </label>
+            <select name="difficulty" id="difficultySelector">
+                <option value="easy">Fácil</option>
+                <option value="medium">Media</option>
+                <option value="hard">Difícil</option>
+            </select> <br>
+            <button type="submit" id="game-start-button" onclick="onGameStartButtonClicked(event);">¡Jugar!</button>
+        </form>
+    </div>
+    <div id="WebGL-output" style="display: none;">
+
+    </div>
+</body>
+</html>

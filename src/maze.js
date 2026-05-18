@@ -75,6 +75,12 @@ export class Maze {
      */ 
     #weakWalls;
 
+    /** 
+     * @type {Map.<Cell, Boolean>} 
+     * Almacena solo las paredes "débiles" (que pueden ser rotas con el pico).
+     */ 
+    #occupiedCells;
+
     /** @readonly @enum {number} */
     static WallType = {
         Full: 2,
@@ -115,13 +121,17 @@ export class Maze {
 
         this.#graph = new Map();
         this.#weakWalls = new Map();
+        this.#occupiedCells = new Map();
 
         for(let i = 0; i < this.rows; i++) {
             for(let j = 0; j < this.cols; j++) {
                 this.#graph.set(toCell(i,j), []);
                 this.#weakWalls.set(toCell(i, j), []);
+                this.#occupiedCells.set(toCell(i, j), false);
             }
         }
+
+        this.#occupiedCells.set(toCell(0,0), true); //La casilla de spawn del personaje
     }
 
     /**
@@ -131,6 +141,23 @@ export class Maze {
      */
     getAccesible(cell){
         return this.#graph.get(cell);
+    }
+
+    /**
+     * @param {Cell} cell 
+     * @returns {Boolean}
+     * Devuelve si la casilla está ocupada
+     */
+    getOccupied(cell){
+        return this.#occupiedCells.get(cell);
+    }
+
+    /**
+     * @param {Cell} cell 
+     * Marca una casilla como ocupada
+     */
+    occupied(cell){
+        this.#occupiedCells.set(cell, true);
     }
 
     /**

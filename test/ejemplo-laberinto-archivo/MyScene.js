@@ -89,25 +89,55 @@ class MyScene extends THREE.Scene {
     addPickUps(seed) {
 
         var pickUpPickaxe = new PickUp(new Pickaxe(this.gui), 2, true);
-        var coords = toCoords(suitableLocationForItem(this.maze, seed, toCell(0,0), 'Pickaxe'));
+        var coords = toCoords(suitableLocationForItem(this.maze, seed, 'Pickaxe', toCell(0,0)));
         this.locatePickUp(pickUpPickaxe, coords[0], coords[1], 0.5);
-
-
-        var pickUp1 = new PickUp(new Key(this.gui), 0.5, true);
-        this.locatePickUp(pickUp1, 1, 1, 0.5)
-        var pickUp2 = new PickUp(new Torch(this.gui), 1.0, true);
-        this.locatePickUp(pickUp2, 2, 2, 0.4)
-        var pickUpTorch2 = new PickUp(new Torch(this.gui), 1.0, false);
-        this.locatePickUp(pickUpTorch2, 0, 2, 0.4)
-        var pickUpEye = new PickUp(new Eye(this.gui), 2, false);
-        this.locatePickUp(pickUpEye, 2, 1, 0.5);
-        
-        this.add(pickUp1);
-        this.add(pickUp2);
-        this.add(pickUpTorch2);
         this.add(pickUpPickaxe);
+        this.pickables.push(pickUpPickaxe);
+
+        var pickUpKey = new PickUp(new Key(this.gui), 0.5, true);
+        var coords = toCoords(suitableLocationForItem(this.maze, seed, 'Key', toCell(this.maze.cols/2,this.maze.rows/2)));
+        this.locatePickUp(pickUpKey, coords[0], coords[1], 0.5);
+        this.add(pickUpKey);
+        this.pickables.push(pickUpKey);
+
+        var pickUpEye = new PickUp(new Eye(this.gui), 2, true);
+        var coords = toCoords(suitableLocationForItem(this.maze, seed, 'Eye', toCell(this.maze.cols/3,this.maze.rows/3)));
+        this.locatePickUp(pickUpEye, coords[0], coords[1], 0.5);
         this.add(pickUpEye);
-        this.pickables.push(pickUp1, pickUp2, pickUpTorch2, pickUpPickaxe, pickUpEye);
+        this.pickables.push(pickUpEye);
+
+        this.NUM_TORCHES = 20;
+        var amplitud = Math.floor(this.maze.rows*this.maze.cols/this.NUM_TORCHES);
+        var inicio = toCell(0,0);
+        for (let i = 0; i < this.NUM_TORCHES; i++) {
+            let ajust = (toCoords(inicio)[1]) + this.maze.rows*(toCoords(inicio)[0]);
+            let fila = Math.floor((amplitud-1 + ajust) / this.maze.rows);
+            let columna = (amplitud-1 + ajust) % this.maze.rows;
+            let fin = toCell(fila,columna);
+
+            console.log(fin, ajust);
+
+
+            var pickUpTorch = new PickUp(new Torch(this.gui), 1.0, true);
+            var coords = toCoords(suitableLocationForItem(this.maze, seed, 'Torch', inicio, fin));
+            this.locatePickUp(pickUpTorch, coords[0], coords[1], 0.4);
+            this.add(pickUpTorch);
+            this.pickables.push(pickUpTorch)
+
+            columna = columna+1 % this.maze.rows;
+            if(columna==0) fila++;
+            inicio = toCell(fila, columna);
+        }
+
+        var pickUpTorch = new PickUp(new Torch(this.gui), 1.0, true);
+        this.locatePickUp(pickUpTorch, 1, 0, 0.4);
+        this.add(pickUpTorch);
+        this.pickables.push(pickUpTorch)
+
+        var pickUpTorch = new PickUp(new Torch(this.gui), 1.0, true);
+        this.locatePickUp(pickUpTorch, 2, 0, 0.4);
+        this.add(pickUpTorch);
+        this.pickables.push(pickUpTorch)
 
         // Weak Walls, no son pickUps pero los trataremos como tal para la interacción
         this.pickables = this.pickables.concat(this.mazeModel.weakBlockMeshes);

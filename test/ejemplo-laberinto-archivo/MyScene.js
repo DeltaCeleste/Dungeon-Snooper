@@ -8,7 +8,7 @@ import { TrackballControls } from 'trackball'
 // Clases de mi proyecto
 
 import { MazeModel } from '../../src/mazeModelGenerator.js';
-import { generateMazeDfs } from '../../src/mazegen.js';
+import { generateMazeDfs, suitableLocationForItem } from '../../src/mazegen.js';
 import { PickUp } from '../../src/PickUp.js';
 import { Key } from '../../models/key/Key.js';
 import { Torch } from '../../models/torch/Torch.js';
@@ -16,6 +16,7 @@ import { Pickaxe } from '../../models/pickaxe/Pickaxe.js';
 import { Eye } from '../../models/Eye/Eye.js';
 import { Character } from '../../src/Character.js'
 import { ArbitraryTimer } from '../../src/Timer.js';
+import { toCell, toCoords } from '../../src/maze.js';
  
 /// La clase fachada del modelo
 /**
@@ -43,9 +44,10 @@ class MyScene extends THREE.Scene {
         // Tras crear cada elemento se añadirá a la escena con     this.add(variable)
         this.createLights ();
 
-        this.createMaze('cocosete');
+        var seed = 'cocosete'
+        this.createMaze(seed);
         
-        this.addPickUps();
+        this.addPickUps(seed);
         
         Character.PLAYER_SPEED = 6.0;
         this.addPlayer();
@@ -84,15 +86,19 @@ class MyScene extends THREE.Scene {
         this.TORCH_LIGHT_TIME = 10000;
     }
     
-    addPickUps() {
+    addPickUps(seed) {
+
+        var pickUpPickaxe = new PickUp(new Pickaxe(this.gui), 2, true);
+        var coords = toCoords(suitableLocationForItem(this.maze, seed, toCell(0,0), 'Pickaxe'));
+        this.locatePickUp(pickUpPickaxe, coords[0], coords[1], 0.5);
+
+
         var pickUp1 = new PickUp(new Key(this.gui), 0.5, true);
         this.locatePickUp(pickUp1, 1, 1, 0.5)
         var pickUp2 = new PickUp(new Torch(this.gui), 1.0, true);
         this.locatePickUp(pickUp2, 2, 2, 0.4)
         var pickUpTorch2 = new PickUp(new Torch(this.gui), 1.0, false);
         this.locatePickUp(pickUpTorch2, 0, 2, 0.4)
-        var pickUpPickaxe = new PickUp(new Pickaxe(this.gui), 2, true);
-        this.locatePickUp(pickUpPickaxe, 1, 2, 0.5);
         var pickUpEye = new PickUp(new Eye(this.gui), 2, false);
         this.locatePickUp(pickUpEye, 2, 1, 0.5);
         
@@ -164,7 +170,7 @@ class MyScene extends THREE.Scene {
 
         if(this.pickables.length > 0){
             this.resetPickUps();
-            this.addPickUps();
+            this.addPickUps(seed);
             this.setupCollisions();
         }
     }

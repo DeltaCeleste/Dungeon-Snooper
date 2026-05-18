@@ -8,7 +8,7 @@ import { TrackballControls } from 'trackball'
 // Clases de mi proyecto
 
 import { MazeModel } from './mazeModelGenerator.js';
-import { generateMazeDfs } from './mazegen.js';
+import { generateMazeDfs, suitableLocationForItem } from './mazegen.js';
 import { PickUp } from './PickUp.js';
 import { Key } from '../models/key/Key.js';
 import { Torch } from '../models/torch/Torch.js';
@@ -16,6 +16,7 @@ import { Pickaxe } from '../models/pickaxe/Pickaxe.js';
 import { Eye } from '../models/Eye/Eye.js';
 import { Character } from './Character.js'
 import { ArbitraryTimer } from './Timer.js';
+import { toCell, toCoords } from '../../src/maze.js';
  
 
 export class GameScene extends THREE.Scene {
@@ -37,7 +38,7 @@ export class GameScene extends THREE.Scene {
 
         this.createMaze(seed);
         
-        this.addPickUps();
+        this.addPickUps(seed);
         
         Character.PLAYER_SPEED = 6.0;
         this.addPlayer();
@@ -75,15 +76,18 @@ export class GameScene extends THREE.Scene {
         this.TORCH_LIGHT_TIME = 10000;
     }
     
-    addPickUps() {
+    addPickUps(seed) {
+
+        var pickUpPickaxe = new PickUp(new Pickaxe(this.gui), 2, true);
+        var coords = toCoords(suitableLocationForItem(this.maze, seed, toCell(0,0), 'Pickaxe'));
+        this.locatePickUp(pickUpPickaxe, coords[0], coords[1], 0.5);
+
         var pickUp1 = new PickUp(new Key(), 0.5, true);
         this.locatePickUp(pickUp1, 1, 1, 0.5)
         var pickUp2 = new PickUp(new Torch(), 1.0, false);
         this.locatePickUp(pickUp2, 2, 2, 0.4)
         var pickUpTorch2 = new PickUp(new Torch(), 1.0, false);
         this.locatePickUp(pickUpTorch2, 0, 2, 0.4)
-        var pickUpPickaxe = new PickUp(new Pickaxe(), 2, true);
-        this.locatePickUp(pickUpPickaxe, 1, 2, 0.5);
         var pickUpEye = new PickUp(new Eye(), 2, false);
         this.locatePickUp(pickUpEye, 2, 1, 0.5);
         

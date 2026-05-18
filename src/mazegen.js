@@ -56,8 +56,49 @@ export function generateMazeDfs(rows, cols, seed, startingCell) {
         }
     }
 
+    //console.log(maze.prettyPrint())
+
     return maze;
 }
+
+/**
+ * @param {maze} maze 
+ * @param {number} seed 
+ * @param {cell} start 
+ * @param {string} item 
+ * @returns {cell}
+ * Busca un camino accesible (sin muros de ningún tipo) desde start. el camino lo busca 
+ * hasta encontrar un callejón sin salida.
+ */
+export function suitableLocationForItem(maze, seed, start, item){
+    const rand = new Math.seedrandom(seed);
+    /** @type {Set.<string>} */
+    var visited = new Set();
+
+
+    if(item == 'Pickaxe'){ // Su posición debe ser accesible desde el inicio 
+
+    }
+
+    let currentCell = start;
+    var cond = true;
+    while (cond){
+        //console.log(currentCell)
+        visited.add(currentCell);
+        let candidatos = maze.getAccesible(currentCell).filter(cell => (!visited.has(cell)));
+        //console.log(candidatos);
+        if(candidatos.length == 0){
+            console.log('Casilla elegida para el item ' + item + ' ' + currentCell)
+            cond = false
+        }
+        else{
+            let chosenCellIdx = mod(rand.int32(), candidatos.length);
+            currentCell = candidatos[chosenCellIdx];
+        }
+    }
+
+    return currentCell;
+} 
 
 function __maze_test() {
     var maze = generateMazeDfs(20, 20, 'laberintos');

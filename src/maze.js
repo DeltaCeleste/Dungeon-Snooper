@@ -126,6 +126,15 @@ export class Maze {
 
     /**
      * @param {Cell} cell 
+     * @returns {Array.<Cell>}
+     * Devuelve los caminos accesibles desde una casilla
+     */
+    getAccesible(cell){
+        return this.#graph.get(cell);
+    }
+
+    /**
+     * @param {Cell} cell 
      * @returns {boolean}
      * Comprueba si la celda dada está en el rango del laberinto.
      */

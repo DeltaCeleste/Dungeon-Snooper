@@ -23,14 +23,22 @@ export class Torch extends THREE.Object3D {
             emissiveIntensity: 0.33,
         })
         this.addFire();
-        var fireLight = new THREE.PointLight(THREE.Color.NAMES.orangered, 0.25, 1.0);
-        fireLight.position.set(0.0, 0.3, 0.0);
-        this.add(fireLight);
+        this.fireLight = new THREE.PointLight(THREE.Color.NAMES.orangered, 1.0, 10.0);
+        this.fireLight.position.set(0.0, 0.3, 0.0);
+        this.add(this.fireLight);
 
         this.frameTimer = 0;
 
         this.hitbox = this.createHitbox();
         this.add(this.hitbox);
+    }
+
+    setIntensity(intensity){
+        this.fireLight.power = intensity;
+    }
+
+    setDistance(distance){
+        this.fireLight.distance = distance;
     }
 
     addFire() {
@@ -82,7 +90,7 @@ export class Torch extends THREE.Object3D {
         var finalGeometry = baseRevolutionGeometry;
         var evaluator = new CSG.Evaluator();
         for(let box of boxBrushes) {
-            console.log(box instanceof CSG.Brush);
+            //console.log(box instanceof CSG.Brush);
             finalGeometry = evaluator.evaluate(finalGeometry, box, CSG.SUBTRACTION);
         }
         

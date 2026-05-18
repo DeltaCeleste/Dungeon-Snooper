@@ -87,7 +87,7 @@ class MyScene extends THREE.Scene {
     addPickUps() {
         var pickUp1 = new PickUp(new Key(this.gui), 0.5, true);
         this.locatePickUp(pickUp1, 1, 1, 0.5)
-        var pickUp2 = new PickUp(new Torch(this.gui), 1.0, false);
+        var pickUp2 = new PickUp(new Torch(this.gui), 1.0, true);
         this.locatePickUp(pickUp2, 2, 2, 0.4)
         var pickUpTorch2 = new PickUp(new Torch(this.gui), 1.0, false);
         this.locatePickUp(pickUpTorch2, 0, 2, 0.4)
@@ -192,6 +192,8 @@ class MyScene extends THREE.Scene {
                         this.currentCameraIndex = this.IDX_FLOATING_CAMERA;
                         this.getCamera()
                         this.eyeTimer.start(this.EYE_VISION_TIME);
+                        this.setAmbientIntensity(1.0);
+                        this.ambientLight.color.setHex(0xAADDFF);
                     }
                     else if(item == 'Torch'){
                         var timeleft = this.torchTimer.getTimeLeft();
@@ -201,7 +203,7 @@ class MyScene extends THREE.Scene {
                 }
                 else{ // Es un muro
                     if(this.player.pickaxe && pickedMesh.name == 'WeakBlock'){
-                        console.log(pickedMesh)
+                        //console.log(pickedMesh)
                         this.player.removeCollidable(pickedMesh);
                         this.removePickUpable(pickedMesh);
                         pickedMesh.parent.remove(pickedMesh);
@@ -322,7 +324,7 @@ class MyScene extends THREE.Scene {
         this.pointLight = new THREE.PointLight( 0xffffff, 100.0, 100.0, 2.0);
         this.pointLight.power = this.guiControls.lightPower;
         this.pointLight.position.set( 0, 9, 0 );
-        console.log (this.pointLight);
+        //console.log (this.pointLight);
         this.add (this.pointLight);
         
     }
@@ -346,7 +348,7 @@ class MyScene extends THREE.Scene {
         var renderer = new THREE.WebGLRenderer();
         
         // Se establece un color de fondo en las imágenes que genera el render
-        renderer.setClearColor(new THREE.Color(0xEEEEEE), 1.0);
+        renderer.setClearColor(new THREE.Color(0x111111), 1.0);
         
         // Se establece el tamaño, se aprovecha la totalidad de la ventana del navegador
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -381,17 +383,19 @@ class MyScene extends THREE.Scene {
     update () {
         //Comprobamos si se acaba el timer del ojo, si es que estuviera en modo aereo
         if(this.eyeTimer.isRunning){
-            console.log(this.eyeTimer.getTimeLeft());
+            //console.log(this.eyeTimer.getTimeLeft());
             if(this.eyeTimer.hasFinished()){
                 this.eyeTimer.stop();
                 this.currentCameraIndex = this.IDX_FP_CAMERA;
                 this.player.removeItem('Eye');
+                this.setAmbientIntensity(this.guiControls.ambientIntensity)
+                this.ambientLight.color.setHex(0xFFFFFF);
             }
         }
 
         //Comprobamos cuanto tiempo de luz le queda a la antorcha para eliminarla si esta se apaga
         if(this.torchTimer.isRunning){
-            console.log(this.torchTimer.getTimeLeft());
+            //console.log(this.torchTimer.getTimeLeft());
             if(this.torchTimer.hasFinished()){
                 this.torchTimer.stop();
                 this.player.removeItem('Torch');

@@ -178,6 +178,10 @@ export class Character extends THREE.Object3D {
             this.antorchaModel = new Torch();
             this.antorchaModel.scale.setScalar(0.05*this.modelScale);
             this.antorchaModel.position.set(this.model.radio*this.modelScale*0.8, 0, this.model.radio*this.modelScale*1.7);
+
+            this.antorchaModel.setDistance(this.antorchaModel.fireLight.distance * 3.0)
+            this.antorchaModel.setIntensity(this.antorchaModel.fireLight.power * 10.0)
+
             this.model.add(this.antorchaModel);
         }
     }

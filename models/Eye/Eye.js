@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import * as CSG from 'csg'
 
 class Eye extends THREE.Object3D {
-  constructor(_gui,_titleGui) {
+  constructor() {
     super();
     
     this.timer = new THREE.Timer();

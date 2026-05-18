@@ -2,12 +2,8 @@ import * as THREE from 'three'
 import * as CSG from 'csg'
 
 class Key extends THREE.Object3D {
-  constructor(gui,titleGui) {
+  constructor() {
     super();
-    
-    // Se crea la parte de la interfaz que corresponde a la grapadora
-    // Se crea primero porque otros métodos usan las variables que se definen para la interfaz
-    this.createGUI(gui,titleGui);
     
     // El material se usa desde varios métodos. Por eso se alamacena en un atributo
     //this.material = new THREE.MeshStandardMaterial({color: 0x885500});

@@ -105,9 +105,6 @@ export class GameScene extends THREE.Scene {
             let columna = (amplitud-1 + ajust) % this.maze.rows;
             let fin = toCell(fila,columna);
 
-            console.log(fin, ajust);
-
-
             var pickUpTorch = new PickUp(new Torch(this.gui), 1.0, true);
             var coords = toCoords(suitableLocationForItem(this.maze, seed, 'Torch', inicio, fin));
             this.locatePickUp(pickUpTorch, coords[0], coords[1], 0.4);

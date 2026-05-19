@@ -1,0 +1,150 @@
+/* Reseteo básico y fuentes */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=MedievalSharp&family=Poppins:wght@300;400;600&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #0b0b0d;
+    background-image: radial-gradient(circle, #1a1510 0%, #050506 100%);
+    color: #e0d9d0;
+    font-family: 'Poppins', sans-serif;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Contenedor del Menú Principal */
+#menu {
+    background: rgba(15, 15, 18, 0.95);
+    border: 2px solid #8a6d3b;
+    border-radius: 8px;
+    padding: 40px;
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(212, 110, 18, 0.2);
+    backdrop-filter: blur(8px);
+}
+
+/* Títulos con efecto antorcha (Flicker) */
+h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.5rem;
+    color: #ff8c00;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+    text-shadow: 0 0 10px rgba(255, 140, 0, 0.6), 0 0 20px rgba(255, 69, 0, 0.4);
+    animation: torch-flicker 3s infinite alternate;
+}
+
+h5 {
+    font-family: 'MedievalSharp', cursive;
+    font-size: 1.1rem;
+    color: #a3937a;
+    letter-spacing: 1px;
+    margin-bottom: 35px;
+    text-transform: uppercase;
+}
+
+/* Formulario y Filas de control */
+#game-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: left;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    font-size: 0.9rem;
+    color: #bfae96;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Inputs y Selects */
+input[type="text"], select {
+    background-color: #16161a;
+    border: 1px solid #4a3f31;
+    border-radius: 4px;
+    color: #f0eae1;
+    padding: 12px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+input[type="text"]:focus, select:focus {
+    outline: none;
+    border-color: #ff8c00;
+    box-shadow: 0 0 8px rgba(255, 140, 0, 0.4);
+    background-color: #1c1c22;
+}
+
+/* Estilo para las opciones del select */
+select option {
+    background-color: #16161a;
+    color: #f0eae1;
+}
+
+/* Botón de Jugar */
+#game-start-button {
+    background: linear-gradient(135deg, #bd6212 0%, #8a3d03 100%);
+    border: 1px solid #ff8c00;
+    border-radius: 4px;
+    color: #ffffff;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-top: 15px;
+    padding: 15px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+#game-start-button:hover {
+    background: linear-gradient(135deg, #e67319 0%, #a84b05 100%);
+    box-shadow: 0 0 20px rgba(255, 102, 0, 0.6);
+    transform: translateY(-2px);
+}
+
+#game-start-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(255, 102, 0, 0.4);
+}
+
+/* Contenedor del Canvas de Three.js */
+#WebGL-output {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1; /* Se dibuja al fondo cuando quites el display: none */
+}
+
+/* Animación de parpadeo de fuego para el título */
+@keyframes torch-flicker {
+    0%, 100% { text-shadow: 0 0 10px rgba(255,140,0,0.6), 0 0 20px rgba(255,69,0,0.4); }
+    25% { text-shadow: 0 0 12px rgba(255,150,20,0.7), 0 0 22px rgba(255,80,10,0.5); }
+    50% { text-shadow: 0 0 9px rgba(255,130,0,0.5), 0 0 18px rgba(240,60,0,0.3); }
+    75% { text-shadow: 0 0 14px rgba(255,160,30,0.8), 0 0 25px rgba(255,90,20,0.6); }
+}

@@ -149,6 +149,7 @@ export class Maze {
      * Devuelve si la casilla está ocupada
      */
     getOccupied(cell){
+        //console.log(this.#occupiedCells);
         return this.#occupiedCells.get(cell);
     }
 
@@ -157,6 +158,7 @@ export class Maze {
      * Marca una casilla como ocupada
      */
     occupied(cell){
+        //console.log(cell)
         this.#occupiedCells.set(cell, true);
     }
 

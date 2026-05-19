@@ -95,10 +95,11 @@ class MyScene extends THREE.Scene {
         this.pickables.push(pickUpPickaxe);
 
         var pickUpKey = new PickUp(new Key(this.gui), 0.5, true);
-        var coords = toCoords(suitableLocationForItem(this.maze, seed, 'Key', toCell(this.maze.cols/2,this.maze.rows/2)));
+        var coords = toCoords(suitableLocationForItem(this.maze, seed, 'Key', toCell(Math.floor(this.maze.cols/2), Math.floor(this.maze.rows/2))));
         this.locatePickUp(pickUpKey, coords[0], coords[1], 0.5);
         this.add(pickUpKey);
         this.pickables.push(pickUpKey);
+        console.log('Key: ' + coords);
 
         var pickUpEye = new PickUp(new Eye(this.gui), 2, true);
         var coords = toCoords(suitableLocationForItem(this.maze, seed, 'Eye', toCell(this.maze.cols/3,this.maze.rows/3)));
@@ -115,8 +116,7 @@ class MyScene extends THREE.Scene {
             let columna = (amplitud-1 + ajust) % this.maze.rows;
             let fin = toCell(fila,columna);
 
-            console.log(fin, ajust);
-
+            //console.log(fin, ajust);
 
             var pickUpTorch = new PickUp(new Torch(this.gui), 1.0, true);
             var coords = toCoords(suitableLocationForItem(this.maze, seed, 'Torch', inicio, fin));

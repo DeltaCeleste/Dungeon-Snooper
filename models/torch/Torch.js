@@ -23,7 +23,10 @@ export class Torch extends THREE.Object3D {
             emissiveIntensity: 0.33,
         })
         this.addFire();
-        this.fireLight = new THREE.PointLight(THREE.Color.NAMES.orangered, 1.0, 10.0);
+
+        this.BASE_LIGHT_POWER = 1.0;
+        this.BASE_LIGHT_DISTANCE = 10.0;
+        this.fireLight = new THREE.PointLight(THREE.Color.NAMES.orangered, this.BASE_LIGHT_POWER, this.BASE_LIGHT_DISTANCE);
         this.fireLight.position.set(0.0, 0.3, 0.0);
         this.add(this.fireLight);
 
@@ -52,6 +55,18 @@ export class Torch extends THREE.Object3D {
             fireMesh.translateY(0.35);
             this.add(fireMesh);
             this.fireMeshes.push(fireMesh);
+        }
+    }
+
+    removeFire(){
+         for(let i = 0; i < 4; i++) {
+            this.fireMeshes[i].scale.setScalar(0);
+        }
+    }
+
+    readdFire(){
+        for(let i = 0; i < 4; i++) {
+            this.fireMeshes[i].scale.setScalar(1);
         }
     }
 

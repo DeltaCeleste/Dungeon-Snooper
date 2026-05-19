@@ -177,17 +177,22 @@ export class Character extends THREE.Object3D {
     }
 
     addTorch(){
-        this.hasGottenTorch = true;
         if(!this.currrentlyHasTorch){
             this.currrentlyHasTorch = true;
-            this.antorchaModel = new Torch();
-            this.antorchaModel.scale.setScalar(0.05*this.modelScale);
-            this.antorchaModel.position.set(this.model.radio*this.modelScale*0.8, 0, this.model.radio*this.modelScale*1.7);
-
-            this.antorchaModel.setDistance(this.antorchaModel.fireLight.distance * 3.0)
-            this.antorchaModel.setIntensity(this.antorchaModel.fireLight.power * 10.0)
-
-            this.model.add(this.antorchaModel);
+            
+            if(!this.hasGottenTorch){
+                this.hasGottenTorch = true;
+                this.antorchaModel = new Torch();
+                this.antorchaModel.scale.setScalar(0.05*this.modelScale);
+                this.antorchaModel.position.set(this.model.radio*this.modelScale*0.8, 0, this.model.radio*this.modelScale*1.7);
+                this.model.add(this.antorchaModel);
+            }
+            else{
+                this.antorchaModel.readdFire();
+            }
+           
+            this.antorchaModel.setDistance(this.antorchaModel.BASE_LIGHT_DISTANCE * 5.0)
+            this.antorchaModel.setIntensity(this.antorchaModel.BASE_LIGHT_POWER * 100.0)
         }
     }
 
@@ -202,7 +207,10 @@ export class Character extends THREE.Object3D {
 
     removeTorch(){
         this.currrentlyHasTorch = false;
-        this.model.remove(this.antorchaModel);
+        //this.model.remove(this.antorchaModel);
+
+        this.antorchaModel.setIntensity(0);
+        this.antorchaModel.removeFire();
     }
 
     removeCollidable(collidableToRemove) {

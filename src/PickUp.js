@@ -32,7 +32,7 @@ export class PickUp extends THREE.Object3D {
         this.position.y += PickUp.FloatAmplitude 
                         * PickUp.FloatFrequency 
                         * Math.cos(PickUp.FloatFrequency * totalTime) 
-                        * delta;
+                        * 1/60;
         if(this.canSpin) {
             this.rotation.y += PickUp.RotationSpeed * delta;
         }

@@ -77,6 +77,7 @@ export class Character extends THREE.Object3D {
                 renderer.domElement.requestPointerLock();
             }
         });
+        renderer.domElement.requestPointerLock();
 
         //Colisión
         /** @type {THREE.Raycaster[]} */ this.raycasts = [new THREE.Raycaster(), new THREE.Raycaster()];

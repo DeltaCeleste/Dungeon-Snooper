@@ -102,13 +102,13 @@ export function suitableLocationForItem(maze, seed, item, start, end){
         if(end === null || end === undefined) {
             currentCell = randomLocationInArea(maze, seed, toCell(Math.floor(maze.cols/2), Math.floor(maze.rows/2)), Math.floor(maze.cols/2), Math.floor(maze.rows/2));
         }
-        else currentCell = randomLocationInArea(maze, seed, start, toCoords(end)[0]-toCoords(start)[0], toCoords(end)[1]-toCoords(start)[1]);
+        else currentCell = randomLocationInArea(maze, seed, start, Math.floor(toCoords(end)[0]-toCoords(start)[0]), Math.floor(toCoords(end)[1]-toCoords(start)[1]));
     }
     else if(item == 'Eye'){
         if(end === null || end === undefined) {
             currentCell = randomLocationInArea(maze, seed, toCell(Math.floor(maze.cols/2), Math.floor(maze.rows/2)), Math.floor(maze.cols/3), Math.floor(maze.rows/3));
         }
-        else currentCell = randomLocationInArea(maze, seed, start, toCoords(end)[0]-toCoords(start)[0], toCoords(end)[1]-toCoords(start)[1]);
+        else currentCell = randomLocationInArea(maze, seed, start, Math.floor(toCoords(end)[0]-toCoords(start)[0]), Math.floor(toCoords(end)[1]-toCoords(start)[1]));
     }
     else if(item == 'Torch'){
         if(end === null || end === undefined) {

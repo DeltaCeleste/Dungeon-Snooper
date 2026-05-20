@@ -21,7 +21,7 @@ import { toCell, toCoords } from '../../src/maze.js';
 
 export class GameScene extends THREE.Scene {
     /** @param {string} myCanvas @param {string} seed  */
-    constructor (myCanvas, seed) { 
+    constructor (myCanvas, seed, difficulty) { 
         super();
 
         /** @type {THREE.Object3D[]} */
@@ -29,7 +29,12 @@ export class GameScene extends THREE.Scene {
 
         // Lo primero, crear el visualizador, pasándole el lienzo sobre el que realizar los renderizados.
         this.renderer = this.createRenderer(myCanvas);
+        //this.renderer.shadowMap.enable = true;
         
+
+        // Establecemos variables en función de la dificultad para modificar la experiencia
+        this.setDifficulty(difficulty);
+
         // Construimos los distinos elementos que tendremos en la escena
         
         // Todo elemento que se desee sea tenido en cuenta en el renderizado de la escena debe pertenecer a esta. Bien como hijo de la escena (this en esta clase) o como hijo de un elemento que ya esté en la escena.
@@ -51,10 +56,10 @@ export class GameScene extends THREE.Scene {
         this.currentCameraIndex = 0;
         this.cameras.push(this.player.fpcamera);
         this.IDX_FP_CAMERA = this.cameras.length-1;
+
         //Camara aérea
-        const distancia = 23;
-        this.floatCamera = new THREE.OrthographicCamera(-distancia/2, distancia/2, distancia/2, -distancia/2, 1, distancia*2)
-        this.floatCamera.position.set(0, distancia, 0); 
+        this.floatCamera = new THREE.OrthographicCamera(-this.mazeSize, this.mazeSize, this.mazeSize, -this.mazeSize, 0.1, 100)
+        this.floatCamera.position.set(0, this.mazeSize, 0); 
         this.floatCamera.lookAt(new THREE.Vector3(0,0,0));
         this.add(this.floatCamera);
         this.cameras.push(this.floatCamera);
@@ -72,8 +77,6 @@ export class GameScene extends THREE.Scene {
 
         this.eyeTimer = new ArbitraryTimer();
         this.torchTimer = new ArbitraryTimer();
-        this.EYE_VISION_TIME = 5000;
-        this.TORCH_LIGHT_TIME = 10000;
     }
     
     addPickUps(seed) {
@@ -90,13 +93,16 @@ export class GameScene extends THREE.Scene {
         this.add(pickUpKey);
         this.pickables.push(pickUpKey);
 
-        var pickUpEye = new PickUp(new Eye(this.gui), 2, true);
-        var coords = toCoords(suitableLocationForItem(this.maze, seed, 'Eye', toCell(this.maze.cols/3,this.maze.rows/3)));
-        this.locatePickUp(pickUpEye, coords[0], coords[1], 0.5);
-        this.add(pickUpEye);
-        this.pickables.push(pickUpEye);
+        for (let i = 0; i < this.NUM_EYES; i++) {
+            var pickUpEye = new PickUp(new Eye(this.gui), 2, true);
+            var coords = toCoords(suitableLocationForItem(this.maze, seed, 'Eye', toCell(this.maze.cols/3,this.maze.rows/3)));
+            this.locatePickUp(pickUpEye, coords[0], coords[1], 0.5);
+            this.add(pickUpEye);
+            this.pickables.push(pickUpEye);
+        }
 
-        this.NUM_TORCHES = this.maze.rows;
+        
+
         var amplitud = Math.floor(this.maze.rows*this.maze.cols/this.NUM_TORCHES);
         var inicio = toCell(0,0);
         for (let i = 0; i < this.NUM_TORCHES; i++) {
@@ -140,7 +146,7 @@ export class GameScene extends THREE.Scene {
     }
 
     addPlayer() {
-        console.log('jugador añadido')
+        //console.log('jugador añadido')
         this.player = new Character(10, this.renderer);
         var playerPosition = this.mazeModel.getRelativePosOfCell(0,0);
         this.player.position.copy(playerPosition);
@@ -161,7 +167,7 @@ export class GameScene extends THREE.Scene {
             this.mazeModel = undefined;
             //this.collidables = this.collidables.filter((obj) => (obj instanceof PickUp));
         }
-        this.maze = generateMazeDfs(15, 15, seed);
+        this.maze = generateMazeDfs(this.mazeSize, this.mazeSize, seed);
         let mazeStrings = this.maze.getAsStrings();
         
         // Por último creamos el modelo.
@@ -218,7 +224,7 @@ export class GameScene extends THREE.Scene {
                 }
                 else{ // Es un muro
                     if(this.player.hasGottenPick && pickedMesh.name == 'WeakBlock'){
-                        console.log(pickedMesh)
+                        //console.log(pickedMesh)
                         this.player.removeCollidable(pickedMesh);
                         this.removePickUpable(pickedMesh);
                         pickedMesh.parent.remove(pickedMesh);
@@ -302,21 +308,9 @@ export class GameScene extends THREE.Scene {
         // La luz ambiental solo tiene un color y una intensidad
         // Se declara como     var     y va a ser una variable local a este método
         //        se hace así puesto que no va a ser accedida desde otros métodos
-        this.AMBIENT_INTENSITY = 0.2;
         this.ambientLight = new THREE.AmbientLight('white', this.AMBIENT_INTENSITY);
         // La añadimos a la escena
         this.add (this.ambientLight);
-        
-        // Se crea una luz focal que va a ser la luz principal de la escena
-        // La luz focal, además tiene una posición, y un punto de mira
-        // Si no se le da punto de mira, apuntará al (0,0,0) en coordenadas del mundo
-        // En este caso se declara como     this.atributo     para que sea un atributo accesible desde otros métodos.
-        const POINT_LIGHT_POWER = 2.0;
-        this.pointLight = new THREE.PointLight( 0xffffff, 100.0, 100.0, 2.0);
-        this.pointLight.power = POINT_LIGHT_POWER;
-        this.pointLight.position.set( 0, 9, 0 );
-        console.log (this.pointLight);
-        this.add (this.pointLight);
         
     }
     
@@ -374,7 +368,7 @@ export class GameScene extends THREE.Scene {
     update () {
         //Comprobamos si se acaba el timer del ojo, si es que estuviera en modo aereo
         if(this.eyeTimer.isRunning){
-            console.log(this.eyeTimer.getTimeLeft());
+            //console.log(this.eyeTimer.getTimeLeft());
             if(this.eyeTimer.hasFinished()){
                 this.eyeTimer.stop();
                 this.currentCameraIndex = this.IDX_FP_CAMERA;
@@ -386,7 +380,7 @@ export class GameScene extends THREE.Scene {
 
         //Comprobamos cuanto tiempo de luz le queda a la antorcha para eliminarla si esta se apaga
         if(this.torchTimer.isRunning){
-            console.log(this.torchTimer.getTimeLeft());
+            //console.log(this.torchTimer.getTimeLeft());
             if(this.torchTimer.hasFinished()){
                 this.torchTimer.stop();
                 this.player.removeItem('Torch');
@@ -416,6 +410,33 @@ export class GameScene extends THREE.Scene {
     switchCamera() {
         this.currentCameraIndex++;
         this.currentCameraIndex %= this.cameras.length;
+    }
+
+    setDifficulty(difficulty){
+        if(difficulty == 'easy'){
+            this.mazeSize = 10;
+            this.AMBIENT_INTENSITY = 0.25;
+            this.NUM_TORCHES = this.mazeSize*this.mazeSize*0.15;
+            this.NUM_EYES = 1;
+            this.EYE_VISION_TIME = 10000;
+            this.TORCH_LIGHT_TIME = 30000;
+        }
+        else if(difficulty == 'hard'){
+            this.mazeSize = 20;
+            this.AMBIENT_INTENSITY = 0.1;
+            this.NUM_TORCHES = this.mazeSize*this.mazeSize*0.2;
+            this.NUM_EYES = 3;
+            this.EYE_VISION_TIME = 5000;
+            this.TORCH_LIGHT_TIME = 10000;
+        }
+        else{ // la por defecto es medium
+            this.mazeSize = 15;
+            this.AMBIENT_INTENSITY = 0.2;
+            this.NUM_TORCHES = this.mazeSize*this.mazeSize*0.15;
+            this.NUM_EYES = 2;
+            this.EYE_VISION_TIME = 8000;
+            this.TORCH_LIGHT_TIME = 20000;
+        }
     }
 }
 

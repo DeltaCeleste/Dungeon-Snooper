@@ -28,6 +28,7 @@ export class Torch extends THREE.Object3D {
         this.BASE_LIGHT_DISTANCE = 10.0;
         this.fireLight = new THREE.PointLight(THREE.Color.NAMES.orangered, this.BASE_LIGHT_POWER, this.BASE_LIGHT_DISTANCE);
         this.fireLight.position.set(0.0, 0.3, 0.0);
+        //this.fireLight.castShadow = true;
         this.add(this.fireLight);
 
         this.frameTimer = 0;

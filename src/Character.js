@@ -12,7 +12,7 @@ export class Character extends THREE.Object3D {
         this.timer = new THREE.Timer();
         this.model = new Mc(scale);
 
-        this.fpcamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, this.model.radio*scale*1.3, 1000);
+        this.fpcamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, this.model.radio*scale*1.3, 10);
         this.fpcamera.position.set(0, this.model.altura*this.model.radio*scale*0.8, this.radio); 
         this.fpcamera.lookAt(new Vector3(0,0,1));
         this.initCamRot = this.fpcamera.rotation.x;
